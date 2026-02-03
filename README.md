@@ -1,1 +1,354 @@
-[{"text": "# Snowflake Notebooks Migration Guide\n\nAn enterprise-ready Streamlit application designed to help sales teams and customers migrate from deprecated warehouse-backed notebooks to compute pool-backed notebooks in Snowflake.\n\n## Features\n\n### Core Functionality\n\n- **Migration Calculator**: Interactive tool to generate compute pool recommendations based on current warehouse configuration\n- **Cost Comparison**: Side-by-side analysis of warehouse vs compute pool costs with savings projections\n- **SQL Templates**: Production-ready SQL queries for cost monitoring, budget tracking, and usage analysis\n- **Best Practices Guide**: Optimization strategies for right-sizing, timeout configuration, and cost management\n- **Setup Wizard**: Step-by-step migration guide with validation checklists\n- **PDF Export**: Generate downloadable PDF reports from any section\n\n### Key Capabilities\n\n\u2705 Warehouse to compute pool mapping recommendations  \n\u2705 GPU instance family selection for ML workloads  \n\u2705 Cost projections with customizable credit rates  \n\u2705 Budget alert threshold calculator  \n\u2705 User attribution and chargeback strategies  \n\u2705 Idle pool detection queries  \n\u2705 Configuration templates for common workload types  \n\u2705 Scenario comparison (save and compare up to 3 configurations)  \n\n## Installation\n\n### Prerequisites\n\n- Python 3.8 or higher\n- pip package manager\n\n### Setup\n\n1. **Clone or download this repository**\n\n```bash\ncd spcs-test1\n```\n\n2. **Install dependencies**\n\n```bash\npip install -r requirements.txt\n```\n\n3. **Run the application**\n\n```bash\nstreamlit run app/main.py\n```\n\nThe app will open in your default web browser at `http://localhost:8501`.\n\n## Usage\n\n### Navigation\n\nThe application consists of 6 main sections:\n\n1. **Landing Page**: Overview and quick navigation\n2. **Why Compute Pools?**: Benefits, comparison tables, and migration urgency guide\n3. **Migration Calculator**: Primary tool for generating recommendations\n4. **Cost Monitoring**: SQL query library for tracking and budgeting\n5. **Best Practices**: Optimization strategies and configuration templates\n6. **Getting Started**: Step-by-step setup wizard\n\n### Migration Calculator Workflow\n\n1. Navigate to \"Migration Calculator\" page\n2. Input your configuration:\n   - Current warehouse size (XS - 6XL)\n   - Workload type (SQL-heavy, ML-heavy, Balanced, Interactive)\n   - Expected concurrent users\n   - GPU requirement (if applicable)\n   - Usage hours per day\n   - Credit rate\n\n3. Click \"Calculate Recommendation\"\n4. Review:\n   - Instance family recommendation\n   - Node count guidance\n   - Cost comparison charts\n   - Monthly savings projection\n   - Auto-suspend recommendations\n\n5. Generate SQL:\n   - Customize compute pool name\n   - Download migration SQL\n   - Save scenario for comparison\n\n6. Export results as PDF\n\n### Cost Monitoring Setup\n\n1. Navigate to \"Cost Monitoring\" page\n2. Review budget setup queries\n3. Download SQL templates:\n   - Daily credit consumption tracking\n   - Budget threshold monitoring\n   - User attribution queries\n   - Idle pool detection\n   - Weekly/hourly usage patterns\n\n4. Customize pool names in queries\n5. Use alert threshold calculator\n6. Export complete monitoring guide as PDF\n\n## Customization\n\n### Pricing Data\n\nThe application uses placeholder pricing data. To customize for your organization:\n\n1. **Edit warehouse specifications**:\n   - File: `app/data/warehouse_specs.json`\n   - Update `credits_per_hour` values based on your actual warehouse costs\n\n2. **Edit compute pool specifications**:\n   - File: `app/data/compute_pool_specs.json`\n   - Update `credits_per_hour` values for each instance family\n\n3. **Adjust credit rate**:\n   - Default: $4 per credit\n   - Users can customize in the calculator interface\n   - Or modify default in `app/models/cost_calculator.py`\n\n### Workload Multipliers\n\nAdjust recommendation logic in `app/models/warehouse_mapping.py`:\n\n```python\nworkload_multipliers = {\n    \"SQL-heavy\": 0.8,     # Adjust based on your workload patterns\n    \"ML-heavy\": 1.5,\n    \"Balanced\": 1.0,\n    \"Interactive\": 0.9\n}\n```\n\n### Styling & Branding\n\nCustomize appearance in `.streamlit/config.toml`:\n\n```toml\n[theme]\nprimaryColor = \"#29B5E8\"  # Your brand color\nbackgroundColor = \"#FFFFFF\"\nsecondaryBackgroundColor = \"#F0F8FF\"\n```\n\nModify CSS in `app/components/styling.py` for advanced customization.\n\n### SQL Templates\n\nAdd or modify SQL queries in `app/data/sql_templates/`:\n\n- `cost_monitoring.sql` - Daily tracking queries\n- `budget_setup.sql` - Budget configuration\n- `usage_queries.sql` - Advanced analysis queries\n\n## Architecture\n\n### Project Structure\n\n```\nspcs-test1/\n\u251c\u2500\u2500 .streamlit/\n\u2502   \u2514\u2500\u2500 config.toml              # Theme configuration\n\u251c\u2500\u2500 app/\n\u2502   \u251c\u2500\u2500 main.py                  # Landing page\n\u2502   \u251c\u2500\u2500 pages/                   # Multi-page app sections\n\u2502   \u2502   \u251c\u2500\u2500 1_Why_Compute_Pools.py\n\u2502   \u2502   \u251c\u2500\u2500 2_Migration_Calculator.py\n\u2502   \u2502   \u251c\u2500\u2500 3_Cost_Monitoring.py\n\u2502   \u2502   \u251c\u2500\u2500 4_Best_Practices.py\n\u2502   \u2502   \u2514\u2500\u2500 5_Getting_Started.py\n\u2502   \u251c\u2500\u2500 components/              # Reusable UI components\n\u2502   \u2502   \u251c\u2500\u2500 styling.py           # CSS and styling utilities\n\u2502   \u2502   \u251c\u2500\u2500 charts.py            # Plotly chart generators\n\u2502   \u2502   \u2514\u2500\u2500 pdf_export.py        # PDF generation\n\u2502   \u251c\u2500\u2500 models/                  # Business logic\n\u2502   \u2502   \u251c\u2500\u2500 warehouse_mapping.py # Recommendation engine\n\u2502   \u2502   \u2514\u2500\u2500 cost_calculator.py   # Cost comparison logic\n\u2502   \u2514\u2500\u2500 data/                    # Configuration data\n\u2502       \u251c\u2500\u2500 warehouse_specs.json\n\u2502       \u251c\u2500\u2500 compute_pool_specs.json\n\u2502       \u2514\u2500\u2500 sql_templates/\n\u2502           \u251c\u2500\u2500 cost_monitoring.sql\n\u2502           \u251c\u2500\u2500 budget_setup.sql\n\u2502           \u2514\u2500\u2500 usage_queries.sql\n\u251c\u2500\u2500 requirements.txt\n\u2514\u2500\u2500 README.md\n```\n\n### Key Components\n\n**Recommendation Engine** (`warehouse_mapping.py`):\n- Maps warehouse sizes to appropriate compute pool configurations\n- Applies workload-specific multipliers\n- Handles GPU instance selection\n- Generates migration SQL\n\n**Cost Calculator** (`cost_calculator.py`):\n- Computes monthly cost projections\n- Compares warehouse vs compute pool costs\n- Calculates savings and ROI\n\n**PDF Export** (`pdf_export.py`):\n- Converts page content to print-friendly HTML\n- Generates PDFs using WeasyPrint\n- Includes disclaimers and timestamps\n\n## Deployment\n\n### Streamlit Community Cloud\n\n1. Push code to GitHub repository\n2. Connect repository to Streamlit Cloud\n3. Deploy from `app/main.py`\n\n### Docker\n\n```dockerfile\nFROM python:3.9-slim\n\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install -r requirements.txt\n\nCOPY app/ ./app/\nCOPY .streamlit/ ./.streamlit/\n\nEXPOSE 8501\nCMD [\"streamlit\", \"run\", \"app/main.py\", \"--server.port=8501\"]\n```\n\n### Internal Enterprise Deployment\n\n- Use internal Streamlit server or Snowflake Streamlit in Snowflake\n- Configure authentication (SSO, OAuth)\n- Customize with actual pricing data\n- Enable audit logging\n\n## Troubleshooting\n\n### Common Issues\n\n**PDF Export Not Working**\n```bash\n# WeasyPrint requires additional system libraries\n# On macOS:\nbrew install cairo pango gdk-pixbuf libffi\n\n# On Ubuntu/Debian:\nsudo apt-get install libpango-1.0-0 libpangocairo-1.0-0\n```\n\n**Port Already in Use**\n```bash\nstreamlit run app/main.py --server.port=8502\n```\n\n**Import Errors**\n```bash\n# Ensure you're in the correct directory\ncd spcs-test1\npython -c \"import sys; sys.path.append('app'); from models import recommend_compute_pool\"\n```\n\n## Disclaimers\n\n- Cost estimates are based on placeholder credit rates\n- Always validate pricing with your Snowflake account team\n- SQL queries should be tested in non-production environments first\n- Compute pool configurations may need adjustment based on actual usage\n\n## Support\n\n- For Snowflake-specific questions: Contact your Snowflake account team\n- For application issues: Check Streamlit documentation at docs.streamlit.io\n- Community support: community.snowflake.com\n\n## Roadmap\n\nPotential future enhancements:\n\n- [ ] Integration with Snowflake APIs for live cost data\n- [ ] Historical cost trend visualization\n- [ ] Automated recommendation refinement based on actual usage\n- [ ] Multi-pool comparison and optimization\n- [ ] Role-based access control\n- [ ] Custom report scheduling\n- [ ] Snowflake Native App version\n\n## License\n\nThis tool is provided as-is for customer enablement purposes. Customize as needed for your organization.\n\n## Version\n\nCurrent Version: 1.0.0  \nLast Updated: 2024\n", "type": "text"}]
+# Snowflake Notebooks Migration Guide
+
+An enterprise-ready Streamlit application designed to help sales teams and customers migrate from deprecated warehouse-backed notebooks to compute pool-backed notebooks in Snowflake.
+
+## Features
+
+### Core Functionality
+
+- **Migration Calculator**: Interactive tool to generate compute pool recommendations based on current warehouse configuration
+- **Cost Comparison**: Side-by-side analysis of warehouse vs compute pool costs with savings projections
+- **SQL Templates**: Production-ready SQL queries for cost monitoring, budget tracking, and usage analysis
+- **Best Practices Guide**: Optimization strategies for right-sizing, timeout configuration, and cost management
+- **Setup Wizard**: Step-by-step migration guide with validation checklists
+- **PDF Export**: Generate downloadable PDF reports from any section
+
+### Key Capabilities
+
+✅ Warehouse to compute pool mapping recommendations  
+✅ GPU instance family selection for ML workloads  
+✅ Cost projections with customizable credit rates  
+✅ Budget alert threshold calculator  
+✅ User attribution and chargeback strategies  
+✅ Idle pool detection queries  
+✅ Configuration templates for common workload types  
+✅ Scenario comparison (save and compare up to 3 configurations)  
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.8 or higher
+- pip package manager
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/sfc-gh-mimam/snowflake-notebooks-migration-guide.git
+cd snowflake-notebooks-migration-guide
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the application
+streamlit run app/main.py
+```
+
+The app will open in your default web browser at `http://localhost:8501`.
+
+### Using the Make Script
+
+```bash
+# Install dependencies
+./make.sh install
+
+# Run locally
+./make.sh run
+
+# Build Docker image
+./make.sh build
+
+# Run in Docker
+./make.sh run-docker
+
+# Run tests
+./make.sh test
+```
+
+## Usage
+
+### Navigation
+
+The application consists of 6 main sections:
+
+1. **Landing Page**: Overview and quick navigation
+2. **Why Compute Pools?**: Benefits, comparison tables, and migration urgency guide
+3. **Migration Calculator**: Primary tool for generating recommendations
+4. **Cost Monitoring**: SQL query library for tracking and budgeting
+5. **Best Practices**: Optimization strategies and configuration templates
+6. **Getting Started**: Step-by-step setup wizard
+
+### Migration Calculator Workflow
+
+1. Navigate to "Migration Calculator" page
+2. Input your configuration:
+   - Current warehouse size (XS - 6XL)
+   - Workload type (SQL-heavy, ML-heavy, Balanced, Interactive)
+   - Expected concurrent users
+   - GPU requirement (if applicable)
+   - Usage hours per day
+   - Credit rate
+
+3. Click "Calculate Recommendation"
+4. Review:
+   - Instance family recommendation
+   - Node count guidance
+   - Cost comparison charts
+   - Monthly savings projection
+   - Auto-suspend recommendations
+
+5. Generate SQL:
+   - Customize compute pool name
+   - Download migration SQL
+   - Save scenario for comparison
+
+6. Export results as PDF
+
+### Cost Monitoring Setup
+
+1. Navigate to "Cost Monitoring" page
+2. Review budget setup queries
+3. Download SQL templates:
+   - Daily credit consumption tracking
+   - Budget threshold monitoring
+   - User attribution queries
+   - Idle pool detection
+   - Weekly/hourly usage patterns
+
+4. Customize pool names in queries
+5. Use alert threshold calculator
+6. Export complete monitoring guide as PDF
+
+## Customization
+
+### Pricing Data
+
+The application uses placeholder pricing data. To customize for your organization:
+
+1. **Edit warehouse specifications**:
+   - File: `app/data/warehouse_specs.json`
+   - Update `credits_per_hour` values based on your actual warehouse costs
+
+2. **Edit compute pool specifications**:
+   - File: `app/data/compute_pool_specs.json`
+   - Update `credits_per_hour` values for each instance family
+
+3. **Adjust credit rate**:
+   - Default: $4 per credit
+   - Users can customize in the calculator interface
+   - Or modify default in `app/models/cost_calculator.py`
+
+### Workload Multipliers
+
+Adjust recommendation logic in `app/models/warehouse_mapping.py`:
+
+```python
+workload_multipliers = {
+    "SQL-heavy": 0.8,     # Adjust based on your workload patterns
+    "ML-heavy": 1.5,
+    "Balanced": 1.0,
+    "Interactive": 0.9
+}
+```
+
+### Styling & Branding
+
+Customize appearance in `.streamlit/config.toml`:
+
+```toml
+[theme]
+primaryColor = "#29B5E8"  # Your brand color
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F8FF"
+```
+
+Modify CSS in `app/components/styling.py` for advanced customization.
+
+### SQL Templates
+
+Add or modify SQL queries in `app/data/sql_templates/`:
+
+- `cost_monitoring.sql` - Daily tracking queries
+- `budget_setup.sql` - Budget configuration
+- `usage_queries.sql` - Advanced analysis queries
+
+## Architecture
+
+### Project Structure
+
+```
+snowflake-notebooks-migration-guide/
+├── .streamlit/
+│   └── config.toml              # Theme configuration
+├── app/
+│   ├── main.py                  # Landing page
+│   ├── pages/                   # Multi-page app sections
+│   │   ├── 1_Why_Compute_Pools.py
+│   │   ├── 2_Migration_Calculator.py
+│   │   ├── 3_Cost_Monitoring.py
+│   │   ├── 4_Best_Practices.py
+│   │   └── 5_Getting_Started.py
+│   ├── components/              # Reusable UI components
+│   │   ├── styling.py           # CSS and styling utilities
+│   │   ├── charts.py            # Plotly chart generators
+│   │   └── pdf_export.py        # PDF generation
+│   ├── models/                  # Business logic
+│   │   ├── warehouse_mapping.py # Recommendation engine
+│   │   └── cost_calculator.py   # Cost comparison logic
+│   └── data/                    # Configuration data
+│       ├── warehouse_specs.json
+│       ├── compute_pool_specs.json
+│       └── sql_templates/
+│           ├── cost_monitoring.sql
+│           ├── budget_setup.sql
+│           └── usage_queries.sql
+├── Dockerfile                   # Container definition
+├── service-spec.yaml            # SPCS service specification
+├── setup.sql                    # SPCS infrastructure setup
+├── make.sh                      # Build automation
+├── requirements.txt
+└── README.md
+```
+
+### Key Components
+
+**Recommendation Engine** (`warehouse_mapping.py`):
+- Maps warehouse sizes to appropriate compute pool configurations
+- Applies workload-specific multipliers
+- Handles GPU instance selection
+- Generates migration SQL
+
+**Cost Calculator** (`cost_calculator.py`):
+- Computes monthly cost projections
+- Compares warehouse vs compute pool costs
+- Calculates savings and ROI
+
+**PDF Export** (`pdf_export.py`):
+- Converts page content to print-friendly HTML
+- Generates PDFs using WeasyPrint
+- Includes disclaimers and timestamps
+
+## Deployment
+
+### Local Development
+
+```bash
+./make.sh run
+# Access at http://localhost:8501
+```
+
+### Docker
+
+```bash
+# Build image
+./make.sh build
+
+# Run container
+./make.sh run-docker
+```
+
+### Snowpark Container Services (SPCS)
+
+For production deployment to Snowflake, see [DEPLOYMENT.md](DEPLOYMENT.md) for complete instructions.
+
+Quick overview:
+
+```bash
+# Prepare for SPCS deployment
+./make.sh spcs-prep
+
+# Run setup.sql in Snowflake to create infrastructure
+
+# Build and push to Snowflake registry
+export REPO_URL='<your-snowflake-registry-url>'
+./make.sh spcs-build
+
+# Create service in Snowflake (see setup.sql)
+```
+
+### Streamlit Community Cloud
+
+1. Push code to GitHub repository
+2. Connect repository to Streamlit Cloud
+3. Deploy from `app/main.py`
+
+## Troubleshooting
+
+### Common Issues
+
+**PDF Export Not Working**
+
+WeasyPrint requires additional system libraries:
+
+```bash
+# On macOS:
+brew install cairo pango gdk-pixbuf libffi
+
+# On Ubuntu/Debian:
+sudo apt-get install libpango-1.0-0 libpangocairo-1.0-0
+```
+
+**Port Already in Use**
+
+```bash
+streamlit run app/main.py --server.port=8502
+```
+
+**Import Errors**
+
+```bash
+# Ensure you're in the correct directory
+cd snowflake-notebooks-migration-guide
+python -c "import sys; sys.path.append('app'); from models import recommend_compute_pool"
+```
+
+## Disclaimers
+
+⚠️ **Important Notes**:
+- Cost estimates are based on placeholder credit rates
+- Always validate pricing with your Snowflake account team
+- SQL queries should be tested in non-production environments first
+- Compute pool configurations may need adjustment based on actual usage
+
+## Documentation
+
+- **README.md** (this file) - Installation and usage guide
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete SPCS deployment guide
+- **[QUICKREF.md](QUICKREF.md)** - Quick reference card
+- **[IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md)** - Implementation details
+
+## Support
+
+- **Snowflake questions**: Contact your Snowflake account team
+- **Application issues**: Check [Streamlit documentation](https://docs.streamlit.io)
+- **Community support**: [community.snowflake.com](https://community.snowflake.com)
+
+## Roadmap
+
+Potential future enhancements:
+
+- [ ] Integration with Snowflake APIs for live cost data
+- [ ] Historical cost trend visualization
+- [ ] Automated recommendation refinement based on actual usage
+- [ ] Multi-pool comparison and optimization
+- [ ] Role-based access control
+- [ ] Custom report scheduling
+- [ ] Snowflake Native App version
+
+## Contributing
+
+This tool is provided for customer enablement. Customize as needed for your organization.
+
+## License
+
+MIT License - See LICENSE file for details
+
+## Version
+
+**Current Version**: 1.0.0  
+**Last Updated**: 2024
+
+---
+
+Built with ❄️ by Snowflake
