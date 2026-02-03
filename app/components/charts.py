@@ -1,1 +1,159 @@
-[{"text": "\"\"\"Chart generation utilities using Plotly.\"\"\"\n\nimport plotly.graph_objects as go\nimport plotly.express as px\nfrom typing import Dict, List\n\n\ndef create_cost_comparison_chart(comparison: Dict) -> go.Figure:\n    \"\"\"Create a cost comparison bar chart.\"\"\"\n    warehouse_cost = comparison[\"warehouse_cost\"][\"monthly_cost\"]\n    pool_cost = comparison[\"compute_pool_cost\"][\"monthly_cost\"]\n\n    fig = go.Figure(data=[\n        go.Bar(\n            name=\"Current (Warehouse)\",\n            x=[\"Monthly Cost\"],\n            y=[warehouse_cost],\n            marker_color=\"#FF6B6B\",\n            text=[f\"${warehouse_cost:,.2f}\"],\n            textposition=\"auto\",\n        ),\n        go.Bar(\n            name=\"Proposed (Compute Pool)\",\n            x=[\"Monthly Cost\"],\n            y=[pool_cost],\n            marker_color=\"#29B5E8\",\n            text=[f\"${pool_cost:,.2f}\"],\n            textposition=\"auto\",\n        )\n    ])\n\n    fig.update_layout(\n        title=\"Monthly Cost Comparison\",\n        yaxis_title=\"Cost (USD)\",\n        barmode=\"group\",\n        showlegend=True,\n        height=400,\n        template=\"plotly_white\",\n        font=dict(family=\"sans-serif\", size=12)\n    )\n\n    return fig\n\n\ndef create_savings_chart(comparison: Dict) -> go.Figure:\n    \"\"\"Create a savings visualization.\"\"\"\n    savings = comparison[\"monthly_savings\"]\n    savings_percent = comparison[\"savings_percent\"]\n\n    color = \"#4CAF50\" if savings > 0 else \"#F44336\"\n    label = \"Savings\" if savings > 0 else \"Additional Cost\"\n\n    fig = go.Figure(go.Indicator(\n        mode=\"number+delta\",\n        value=abs(savings),\n        title={\"text\": f\"Monthly {label}\"},\n        delta={\"reference\": 0, \"valueformat\": \".2f\"},\n        number={\"prefix\": \"$\", \"valueformat\": \",.2f\"},\n        domain={\"x\": [0, 1], \"y\": [0, 1]}\n    ))\n\n    fig.update_layout(\n        height=300,\n        template=\"plotly_white\"\n    )\n\n    return fig\n\n\ndef create_resource_comparison(warehouse: Dict, pool_config: Dict) -> go.Figure:\n    \"\"\"Create a resource comparison chart.\"\"\"\n    categories = [\"Memory (GB)\", \"vCPU\"]\n    warehouse_vals = [warehouse[\"memory_gb\"], warehouse[\"vcpu\"]]\n    pool_vals = [pool_config[\"memory_gb\"], pool_config[\"vcpu\"]]\n\n    fig = go.Figure(data=[\n        go.Bar(\n            name=\"Warehouse\",\n            x=categories,\n            y=warehouse_vals,\n            marker_color=\"#FF6B6B\"\n        ),\n        go.Bar(\n            name=\"Compute Pool (per node)\",\n            x=categories,\n            y=pool_vals,\n            marker_color=\"#29B5E8\"\n        )\n    ])\n\n    fig.update_layout(\n        title=\"Resource Comparison\",\n        yaxis_title=\"Amount\",\n        barmode=\"group\",\n        height=400,\n        template=\"plotly_white\"\n    )\n\n    return fig\n\n\ndef create_credit_usage_timeline(data: List[Dict]) -> go.Figure:\n    \"\"\"Create a timeline chart for credit usage.\"\"\"\n    if not data:\n        fig = go.Figure()\n        fig.add_annotation(\n            text=\"No data available\",\n            xref=\"paper\",\n            yref=\"paper\",\n            x=0.5,\n            y=0.5,\n            showarrow=False\n        )\n        return fig\n\n    fig = go.Figure(data=[\n        go.Scatter(\n            x=[d[\"date\"] for d in data],\n            y=[d[\"credits\"] for d in data],\n            mode=\"lines+markers\",\n            line=dict(color=\"#29B5E8\", width=2),\n            marker=dict(size=8),\n            fill=\"tozeroy\",\n            fillcolor=\"rgba(41, 181, 232, 0.2)\"\n        )\n    ])\n\n    fig.update_layout(\n        title=\"Daily Credit Consumption\",\n        xaxis_title=\"Date\",\n        yaxis_title=\"Credits\",\n        height=400,\n        template=\"plotly_white\",\n        hovermode=\"x unified\"\n    )\n\n    return fig\n\n\ndef create_workload_distribution_pie(workloads: Dict[str, float]) -> go.Figure:\n    \"\"\"Create a pie chart for workload distribution.\"\"\"\n    fig = go.Figure(data=[\n        go.Pie(\n            labels=list(workloads.keys()),\n            values=list(workloads.values()),\n            hole=0.3,\n            marker=dict(\n                colors=[\"#29B5E8\", \"#4CAF50\", \"#FFA500\", \"#9C27B0\"]\n            )\n        )\n    ])\n\n    fig.update_layout(\n        title=\"Workload Distribution\",\n        height=400,\n        template=\"plotly_white\"\n    )\n\n    return fig\n", "type": "text"}]
+"""Chart generation utilities using Plotly."""
+
+import plotly.graph_objects as go
+import plotly.express as px
+from typing import Dict, List
+
+
+def create_cost_comparison_chart(comparison: Dict) -> go.Figure:
+    """Create a cost comparison bar chart."""
+    warehouse_cost = comparison["warehouse_cost"]["monthly_cost"]
+    pool_cost = comparison["compute_pool_cost"]["monthly_cost"]
+
+    fig = go.Figure(data=[
+        go.Bar(
+            name="Current (Warehouse)",
+            x=["Monthly Cost"],
+            y=[warehouse_cost],
+            marker_color="#FF6B6B",
+            text=[f"${warehouse_cost:,.2f}"],
+            textposition="auto",
+        ),
+        go.Bar(
+            name="Proposed (Compute Pool)",
+            x=["Monthly Cost"],
+            y=[pool_cost],
+            marker_color="#29B5E8",
+            text=[f"${pool_cost:,.2f}"],
+            textposition="auto",
+        )
+    ])
+
+    fig.update_layout(
+        title="Monthly Cost Comparison",
+        yaxis_title="Cost (USD)",
+        barmode="group",
+        showlegend=True,
+        height=400,
+        template="plotly_white",
+        font=dict(family="sans-serif", size=12)
+    )
+
+    return fig
+
+
+def create_savings_chart(comparison: Dict) -> go.Figure:
+    """Create a savings visualization."""
+    savings = comparison["monthly_savings"]
+    savings_percent = comparison["savings_percent"]
+
+    color = "#4CAF50" if savings > 0 else "#F44336"
+    label = "Savings" if savings > 0 else "Additional Cost"
+
+    fig = go.Figure(go.Indicator(
+        mode="number+delta",
+        value=abs(savings),
+        title={"text": f"Monthly {label}"},
+        delta={"reference": 0, "valueformat": ".2f"},
+        number={"prefix": "$", "valueformat": ",.2f"},
+        domain={"x": [0, 1], "y": [0, 1]}
+    ))
+
+    fig.update_layout(
+        height=300,
+        template="plotly_white"
+    )
+
+    return fig
+
+
+def create_resource_comparison(warehouse: Dict, pool_config: Dict) -> go.Figure:
+    """Create a resource comparison chart."""
+    categories = ["Memory (GB)", "vCPU"]
+    warehouse_vals = [warehouse["memory_gb"], warehouse["vcpu"]]
+    pool_vals = [pool_config["memory_gb"], pool_config["vcpu"]]
+
+    fig = go.Figure(data=[
+        go.Bar(
+            name="Warehouse",
+            x=categories,
+            y=warehouse_vals,
+            marker_color="#FF6B6B"
+        ),
+        go.Bar(
+            name="Compute Pool (per node)",
+            x=categories,
+            y=pool_vals,
+            marker_color="#29B5E8"
+        )
+    ])
+
+    fig.update_layout(
+        title="Resource Comparison",
+        yaxis_title="Amount",
+        barmode="group",
+        height=400,
+        template="plotly_white"
+    )
+
+    return fig
+
+
+def create_credit_usage_timeline(data: List[Dict]) -> go.Figure:
+    """Create a timeline chart for credit usage."""
+    if not data:
+        fig = go.Figure()
+        fig.add_annotation(
+            text="No data available",
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False
+        )
+        return fig
+
+    fig = go.Figure(data=[
+        go.Scatter(
+            x=[d["date"] for d in data],
+            y=[d["credits"] for d in data],
+            mode="lines+markers",
+            line=dict(color="#29B5E8", width=2),
+            marker=dict(size=8),
+            fill="tozeroy",
+            fillcolor="rgba(41, 181, 232, 0.2)"
+        )
+    ])
+
+    fig.update_layout(
+        title="Daily Credit Consumption",
+        xaxis_title="Date",
+        yaxis_title="Credits",
+        height=400,
+        template="plotly_white",
+        hovermode="x unified"
+    )
+
+    return fig
+
+
+def create_workload_distribution_pie(workloads: Dict[str, float]) -> go.Figure:
+    """Create a pie chart for workload distribution."""
+    fig = go.Figure(data=[
+        go.Pie(
+            labels=list(workloads.keys()),
+            values=list(workloads.values()),
+            hole=0.3,
+            marker=dict(
+                colors=["#29B5E8", "#4CAF50", "#FFA500", "#9C27B0"]
+            )
+        )
+    ])
+
+    fig.update_layout(
+        title="Workload Distribution",
+        height=400,
+        template="plotly_white"
+    )
+
+    return fig

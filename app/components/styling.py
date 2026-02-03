@@ -1,1 +1,233 @@
-[{"text": "\"\"\"Styling utilities for enterprise appearance.\"\"\"\n\nimport streamlit as st\n\n\ndef inject_custom_css():\n    \"\"\"Inject custom CSS for enterprise styling.\"\"\"\n    st.markdown(\"\"\"\n        <style>\n        /* Main container styling */\n        .main .block-container {\n            padding-top: 2rem;\n            padding-bottom: 2rem;\n            max-width: 1200px;\n        }\n\n        /* Card styling */\n        .enterprise-card {\n            background-color: #FFFFFF;\n            border: 1px solid #E0E0E0;\n            border-radius: 8px;\n            padding: 1.5rem;\n            margin-bottom: 1rem;\n            box-shadow: 0 2px 4px rgba(0,0,0,0.05);\n        }\n\n        .enterprise-card:hover {\n            box-shadow: 0 4px 8px rgba(0,0,0,0.1);\n            transition: box-shadow 0.3s ease;\n        }\n\n        /* Header styling */\n        .enterprise-header {\n            color: #29B5E8;\n            font-weight: 600;\n            margin-bottom: 1rem;\n            border-bottom: 2px solid #29B5E8;\n            padding-bottom: 0.5rem;\n        }\n\n        /* Button customization */\n        .stButton>button {\n            border-radius: 6px;\n            font-weight: 500;\n            border: 1px solid #29B5E8;\n            background-color: #29B5E8;\n            color: white;\n        }\n\n        .stButton>button:hover {\n            background-color: #1a8fc9;\n            border-color: #1a8fc9;\n        }\n\n        /* Info box styling */\n        .info-box {\n            background-color: #F0F8FF;\n            border-left: 4px solid #29B5E8;\n            padding: 1rem;\n            margin: 1rem 0;\n            border-radius: 4px;\n        }\n\n        .warning-box {\n            background-color: #FFF4E6;\n            border-left: 4px solid #FFA500;\n            padding: 1rem;\n            margin: 1rem 0;\n            border-radius: 4px;\n        }\n\n        /* Metric card styling */\n        .metric-card {\n            background: linear-gradient(135deg, #29B5E8 0%, #1a8fc9 100%);\n            color: white;\n            padding: 1.5rem;\n            border-radius: 8px;\n            text-align: center;\n            margin-bottom: 1rem;\n        }\n\n        .metric-value {\n            font-size: 2.5rem;\n            font-weight: 700;\n            margin: 0.5rem 0;\n        }\n\n        .metric-label {\n            font-size: 0.9rem;\n            opacity: 0.9;\n            text-transform: uppercase;\n            letter-spacing: 1px;\n        }\n\n        /* Table styling */\n        .dataframe {\n            border: none !important;\n        }\n\n        .dataframe th {\n            background-color: #29B5E8 !important;\n            color: white !important;\n            font-weight: 600 !important;\n            text-align: left !important;\n        }\n\n        .dataframe td {\n            text-align: left !important;\n        }\n\n        /* Code block styling */\n        code {\n            background-color: #F5F5F5;\n            padding: 0.2rem 0.4rem;\n            border-radius: 3px;\n            font-family: 'Courier New', monospace;\n        }\n\n        pre {\n            background-color: #F5F5F5;\n            padding: 1rem;\n            border-radius: 6px;\n            border-left: 3px solid #29B5E8;\n        }\n\n        /* Sidebar styling */\n        .css-1d391kg {\n            background-color: #F8F9FA;\n        }\n\n        /* Navigation */\n        .nav-card {\n            background-color: white;\n            border: 2px solid #E0E0E0;\n            border-radius: 8px;\n            padding: 1.5rem;\n            margin: 1rem 0;\n            cursor: pointer;\n            text-decoration: none;\n            display: block;\n            transition: all 0.3s ease;\n        }\n\n        .nav-card:hover {\n            border-color: #29B5E8;\n            transform: translateY(-2px);\n            box-shadow: 0 4px 12px rgba(41, 181, 232, 0.2);\n        }\n\n        .nav-title {\n            color: #29B5E8;\n            font-size: 1.3rem;\n            font-weight: 600;\n            margin-bottom: 0.5rem;\n        }\n\n        .nav-description {\n            color: #666;\n            font-size: 0.9rem;\n        }\n\n        /* Disclaimer styling */\n        .disclaimer {\n            background-color: #FFF9E6;\n            border: 1px solid #FFD700;\n            border-radius: 6px;\n            padding: 1rem;\n            margin: 1.5rem 0;\n            font-size: 0.85rem;\n            color: #666;\n        }\n\n        /* Success/Error messages */\n        .success-message {\n            background-color: #E8F5E9;\n            border-left: 4px solid #4CAF50;\n            padding: 1rem;\n            border-radius: 4px;\n            margin: 1rem 0;\n        }\n\n        .error-message {\n            background-color: #FFEBEE;\n            border-left: 4px solid #F44336;\n            padding: 1rem;\n            border-radius: 4px;\n            margin: 1rem 0;\n        }\n        </style>\n    \"\"\", unsafe_allow_html=True)\n\n\ndef create_card(content: str, card_class: str = \"enterprise-card\"):\n    \"\"\"Create a styled card with content.\"\"\"\n    st.markdown(f'<div class=\"{card_class}\">{content}</div>', unsafe_allow_html=True)\n\n\ndef create_header(text: str, level: int = 1):\n    \"\"\"Create a styled header.\"\"\"\n    tag = f\"h{level}\"\n    st.markdown(f'<{tag} class=\"enterprise-header\">{text}</{tag}>', unsafe_allow_html=True)\n\n\ndef create_info_box(content: str):\n    \"\"\"Create an info box.\"\"\"\n    st.markdown(f'<div class=\"info-box\">{content}</div>', unsafe_allow_html=True)\n\n\ndef create_warning_box(content: str):\n    \"\"\"Create a warning box.\"\"\"\n    st.markdown(f'<div class=\"warning-box\">{content}</div>', unsafe_allow_html=True)\n\n\ndef create_disclaimer():\n    \"\"\"Create a standard disclaimer box.\"\"\"\n    st.markdown(\"\"\"\n        <div class=\"disclaimer\">\n            <strong>⚠️ Pricing Disclaimer:</strong> The cost estimates shown are based on \n            placeholder credit rates and may not reflect your actual Snowflake pricing. \n            Please consult with your Snowflake account team for accurate pricing specific \n            to your contract and region.\n        </div>\n    \"\"\", unsafe_allow_html=True)\n\n\ndef create_metric_card(value: str, label: str):\n    \"\"\"Create a metric display card.\"\"\"\n    st.markdown(f\"\"\"\n        <div class=\"metric-card\">\n            <div class=\"metric-label\">{label}</div>\n            <div class=\"metric-value\">{value}</div>\n        </div>\n    \"\"\", unsafe_allow_html=True)\n", "type": "text"}]
+"""Styling utilities for enterprise appearance."""
+
+import streamlit as st
+
+
+def inject_custom_css():
+    """Inject custom CSS for enterprise styling."""
+    st.markdown("""
+        <style>
+        /* Main container styling */
+        .main .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            max-width: 1200px;
+        }
+
+        /* Card styling */
+        .enterprise-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .enterprise-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* Header styling */
+        .enterprise-header {
+            color: #29B5E8;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #29B5E8;
+            padding-bottom: 0.5rem;
+        }
+
+        /* Button customization */
+        .stButton>button {
+            border-radius: 6px;
+            font-weight: 500;
+            border: 1px solid #29B5E8;
+            background-color: #29B5E8;
+            color: white;
+        }
+
+        .stButton>button:hover {
+            background-color: #1a8fc9;
+            border-color: #1a8fc9;
+        }
+
+        /* Info box styling */
+        .info-box {
+            background-color: #F0F8FF;
+            border-left: 4px solid #29B5E8;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .warning-box {
+            background-color: #FFF4E6;
+            border-left: 4px solid #FFA500;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        /* Metric card styling */
+        .metric-card {
+            background: linear-gradient(135deg, #29B5E8 0%, #1a8fc9 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Table styling */
+        .dataframe {
+            border: none !important;
+        }
+
+        .dataframe th {
+            background-color: #29B5E8 !important;
+            color: white !important;
+            font-weight: 600 !important;
+            text-align: left !important;
+        }
+
+        .dataframe td {
+            text-align: left !important;
+        }
+
+        /* Code block styling */
+        code {
+            background-color: #F5F5F5;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        pre {
+            background-color: #F5F5F5;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 3px solid #29B5E8;
+        }
+
+        /* Sidebar styling */
+        .css-1d391kg {
+            background-color: #F8F9FA;
+        }
+
+        /* Navigation */
+        .nav-card {
+            background-color: white;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .nav-card:hover {
+            border-color: #29B5E8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(41, 181, 232, 0.2);
+        }
+
+        .nav-title {
+            color: #29B5E8;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Disclaimer styling */
+        .disclaimer {
+            background-color: #FFF9E6;
+            border: 1px solid #FFD700;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Success/Error messages */
+        .success-message {
+            background-color: #E8F5E9;
+            border-left: 4px solid #4CAF50;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        .error-message {
+            background-color: #FFEBEE;
+            border-left: 4px solid #F44336;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+
+def create_card(content: str, card_class: str = "enterprise-card"):
+    """Create a styled card with content."""
+    st.markdown(f'<div class="{card_class}">{content}</div>', unsafe_allow_html=True)
+
+
+def create_header(text: str, level: int = 1):
+    """Create a styled header."""
+    tag = f"h{level}"
+    st.markdown(f'<{tag} class="enterprise-header">{text}</{tag}>', unsafe_allow_html=True)
+
+
+def create_info_box(content: str):
+    """Create an info box."""
+    st.markdown(f'<div class="info-box">{content}</div>', unsafe_allow_html=True)
+
+
+def create_warning_box(content: str):
+    """Create a warning box."""
+    st.markdown(f'<div class="warning-box">{content}</div>', unsafe_allow_html=True)
+
+
+def create_disclaimer():
+    """Create a standard disclaimer box."""
+    st.markdown("""
+        <div class="disclaimer">
+            <strong>⚠️ Pricing Disclaimer:</strong> The cost estimates shown are based on 
+            placeholder credit rates and may not reflect your actual Snowflake pricing. 
+            Please consult with your Snowflake account team for accurate pricing specific 
+            to your contract and region.
+        </div>
+    """, unsafe_allow_html=True)
+
+
+def create_metric_card(value: str, label: str):
+    """Create a metric display card."""
+    st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-label">{label}</div>
+            <div class="metric-value">{value}</div>
+        </div>
+    """, unsafe_allow_html=True)

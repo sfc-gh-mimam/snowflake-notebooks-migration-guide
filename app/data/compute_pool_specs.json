@@ -1,1 +1,90 @@
-[{"text": "{\n  \"instance_families\": [\n    {\n      \"family\": \"CPU_X64_XS\",\n      \"type\": \"CPU\",\n      \"memory_gb\": 2,\n      \"vcpu\": 1,\n      \"credits_per_hour\": 0.5,\n      \"description\": \"Extra small CPU instances for lightweight notebooks\"\n    },\n    {\n      \"family\": \"CPU_X64_S\",\n      \"type\": \"CPU\",\n      \"memory_gb\": 4,\n      \"vcpu\": 2,\n      \"credits_per_hour\": 0.9,\n      \"description\": \"Small CPU instances for standard workloads\"\n    },\n    {\n      \"family\": \"CPU_X64_M\",\n      \"type\": \"CPU\",\n      \"memory_gb\": 8,\n      \"vcpu\": 4,\n      \"credits_per_hour\": 1.7,\n      \"description\": \"Medium CPU instances for moderate workloads\"\n    },\n    {\n      \"family\": \"CPU_X64_L\",\n      \"type\": \"CPU\",\n      \"memory_gb\": 16,\n      \"vcpu\": 8,\n      \"credits_per_hour\": 3.4,\n      \"description\": \"Large CPU instances for intensive workloads\"\n    },\n    {\n      \"family\": \"HIGHMEM_X64_S\",\n      \"type\": \"CPU\",\n      \"memory_gb\": 16,\n      \"vcpu\": 2,\n      \"credits_per_hour\": 1.5,\n      \"description\": \"Small high-memory instances for memory-intensive tasks\"\n    },\n    {\n      \"family\": \"HIGHMEM_X64_M\",\n      \"type\": \"CPU\",\n      \"memory_gb\": 32,\n      \"vcpu\": 4,\n      \"credits_per_hour\": 2.9,\n      \"description\": \"Medium high-memory instances for large datasets\"\n    },\n    {\n      \"family\": \"HIGHMEM_X64_L\",\n      \"type\": \"CPU\",\n      \"memory_gb\": 64,\n      \"vcpu\": 8,\n      \"credits_per_hour\": 5.7,\n      \"description\": \"Large high-memory instances for big data processing\"\n    },\n    {\n      \"family\": \"GPU_NV_S\",\n      \"type\": \"GPU\",\n      \"memory_gb\": 16,\n      \"vcpu\": 4,\n      \"gpu_memory_gb\": 16,\n      \"gpu_count\": 1,\n      \"credits_per_hour\": 4.5,\n      \"description\": \"Small GPU instances for ML training and inference\"\n    },\n    {\n      \"family\": \"GPU_NV_M\",\n      \"type\": \"GPU\",\n      \"memory_gb\": 32,\n      \"vcpu\": 8,\n      \"gpu_memory_gb\": 32,\n      \"gpu_count\": 1,\n      \"credits_per_hour\": 8.5,\n      \"description\": \"Medium GPU instances for deep learning workloads\"\n    },\n    {\n      \"family\": \"GPU_NV_L\",\n      \"type\": \"GPU\",\n      \"memory_gb\": 64,\n      \"vcpu\": 16,\n      \"gpu_memory_gb\": 40,\n      \"gpu_count\": 2,\n      \"credits_per_hour\": 16.0,\n      \"description\": \"Large GPU instances for advanced ML and AI\"\n    }\n  ]\n}\n", "type": "text"}]
+{
+  "instance_families": [
+    {
+      "family": "CPU_X64_XS",
+      "type": "CPU",
+      "memory_gb": 2,
+      "vcpu": 1,
+      "credits_per_hour": 0.5,
+      "description": "Extra small CPU instances for lightweight notebooks"
+    },
+    {
+      "family": "CPU_X64_S",
+      "type": "CPU",
+      "memory_gb": 4,
+      "vcpu": 2,
+      "credits_per_hour": 0.9,
+      "description": "Small CPU instances for standard workloads"
+    },
+    {
+      "family": "CPU_X64_M",
+      "type": "CPU",
+      "memory_gb": 8,
+      "vcpu": 4,
+      "credits_per_hour": 1.7,
+      "description": "Medium CPU instances for moderate workloads"
+    },
+    {
+      "family": "CPU_X64_L",
+      "type": "CPU",
+      "memory_gb": 16,
+      "vcpu": 8,
+      "credits_per_hour": 3.4,
+      "description": "Large CPU instances for intensive workloads"
+    },
+    {
+      "family": "HIGHMEM_X64_S",
+      "type": "CPU",
+      "memory_gb": 16,
+      "vcpu": 2,
+      "credits_per_hour": 1.5,
+      "description": "Small high-memory instances for memory-intensive tasks"
+    },
+    {
+      "family": "HIGHMEM_X64_M",
+      "type": "CPU",
+      "memory_gb": 32,
+      "vcpu": 4,
+      "credits_per_hour": 2.9,
+      "description": "Medium high-memory instances for large datasets"
+    },
+    {
+      "family": "HIGHMEM_X64_L",
+      "type": "CPU",
+      "memory_gb": 64,
+      "vcpu": 8,
+      "credits_per_hour": 5.7,
+      "description": "Large high-memory instances for big data processing"
+    },
+    {
+      "family": "GPU_NV_S",
+      "type": "GPU",
+      "memory_gb": 16,
+      "vcpu": 4,
+      "gpu_memory_gb": 16,
+      "gpu_count": 1,
+      "credits_per_hour": 4.5,
+      "description": "Small GPU instances for ML training and inference"
+    },
+    {
+      "family": "GPU_NV_M",
+      "type": "GPU",
+      "memory_gb": 32,
+      "vcpu": 8,
+      "gpu_memory_gb": 32,
+      "gpu_count": 1,
+      "credits_per_hour": 8.5,
+      "description": "Medium GPU instances for deep learning workloads"
+    },
+    {
+      "family": "GPU_NV_L",
+      "type": "GPU",
+      "memory_gb": 64,
+      "vcpu": 16,
+      "gpu_memory_gb": 40,
+      "gpu_count": 2,
+      "credits_per_hour": 16.0,
+      "description": "Large GPU instances for advanced ML and AI"
+    }
+  ]
+}

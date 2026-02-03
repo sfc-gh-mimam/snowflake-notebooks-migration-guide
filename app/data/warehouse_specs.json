@@ -1,1 +1,84 @@
-[{"text": "{\n  \"warehouses\": [\n    {\n      \"size\": \"X-Small\",\n      \"code\": \"XS\",\n      \"credits_per_hour\": 1,\n      \"memory_gb\": 8,\n      \"vcpu\": 2,\n      \"typical_use\": \"Light queries, development\"\n    },\n    {\n      \"size\": \"Small\",\n      \"code\": \"S\",\n      \"credits_per_hour\": 2,\n      \"memory_gb\": 16,\n      \"vcpu\": 4,\n      \"typical_use\": \"Standard analytical queries\"\n    },\n    {\n      \"size\": \"Medium\",\n      \"code\": \"M\",\n      \"credits_per_hour\": 4,\n      \"memory_gb\": 32,\n      \"vcpu\": 8,\n      \"typical_use\": \"Heavy queries, multiple users\"\n    },\n    {\n      \"size\": \"Large\",\n      \"code\": \"L\",\n      \"credits_per_hour\": 8,\n      \"memory_gb\": 64,\n      \"vcpu\": 16,\n      \"typical_use\": \"Complex transformations, ML workloads\"\n    },\n    {\n      \"size\": \"X-Large\",\n      \"code\": \"XL\",\n      \"credits_per_hour\": 16,\n      \"memory_gb\": 128,\n      \"vcpu\": 32,\n      \"typical_use\": \"Large-scale ML, heavy concurrent usage\"\n    },\n    {\n      \"size\": \"2X-Large\",\n      \"code\": \"2XL\",\n      \"credits_per_hour\": 32,\n      \"memory_gb\": 256,\n      \"vcpu\": 64,\n      \"typical_use\": \"Enterprise-scale ML pipelines\"\n    },\n    {\n      \"size\": \"3X-Large\",\n      \"code\": \"3XL\",\n      \"credits_per_hour\": 64,\n      \"memory_gb\": 512,\n      \"vcpu\": 128,\n      \"typical_use\": \"Massive parallel processing\"\n    },\n    {\n      \"size\": \"4X-Large\",\n      \"code\": \"4XL\",\n      \"credits_per_hour\": 128,\n      \"memory_gb\": 1024,\n      \"vcpu\": 256,\n      \"typical_use\": \"Extreme workloads\"\n    },\n    {\n      \"size\": \"5X-Large\",\n      \"code\": \"5XL\",\n      \"credits_per_hour\": 256,\n      \"memory_gb\": 2048,\n      \"vcpu\": 512,\n      \"typical_use\": \"Specialized high-capacity needs\"\n    },\n    {\n      \"size\": \"6X-Large\",\n      \"code\": \"6XL\",\n      \"credits_per_hour\": 512,\n      \"memory_gb\": 4096,\n      \"vcpu\": 1024,\n      \"typical_use\": \"Maximum capacity workloads\"\n    }\n  ]\n}\n", "type": "text"}]
+{
+  "warehouses": [
+    {
+      "size": "X-Small",
+      "code": "XS",
+      "credits_per_hour": 1,
+      "memory_gb": 8,
+      "vcpu": 2,
+      "typical_use": "Light queries, development"
+    },
+    {
+      "size": "Small",
+      "code": "S",
+      "credits_per_hour": 2,
+      "memory_gb": 16,
+      "vcpu": 4,
+      "typical_use": "Standard analytical queries"
+    },
+    {
+      "size": "Medium",
+      "code": "M",
+      "credits_per_hour": 4,
+      "memory_gb": 32,
+      "vcpu": 8,
+      "typical_use": "Heavy queries, multiple users"
+    },
+    {
+      "size": "Large",
+      "code": "L",
+      "credits_per_hour": 8,
+      "memory_gb": 64,
+      "vcpu": 16,
+      "typical_use": "Complex transformations, ML workloads"
+    },
+    {
+      "size": "X-Large",
+      "code": "XL",
+      "credits_per_hour": 16,
+      "memory_gb": 128,
+      "vcpu": 32,
+      "typical_use": "Large-scale ML, heavy concurrent usage"
+    },
+    {
+      "size": "2X-Large",
+      "code": "2XL",
+      "credits_per_hour": 32,
+      "memory_gb": 256,
+      "vcpu": 64,
+      "typical_use": "Enterprise-scale ML pipelines"
+    },
+    {
+      "size": "3X-Large",
+      "code": "3XL",
+      "credits_per_hour": 64,
+      "memory_gb": 512,
+      "vcpu": 128,
+      "typical_use": "Massive parallel processing"
+    },
+    {
+      "size": "4X-Large",
+      "code": "4XL",
+      "credits_per_hour": 128,
+      "memory_gb": 1024,
+      "vcpu": 256,
+      "typical_use": "Extreme workloads"
+    },
+    {
+      "size": "5X-Large",
+      "code": "5XL",
+      "credits_per_hour": 256,
+      "memory_gb": 2048,
+      "vcpu": 512,
+      "typical_use": "Specialized high-capacity needs"
+    },
+    {
+      "size": "6X-Large",
+      "code": "6XL",
+      "credits_per_hour": 512,
+      "memory_gb": 4096,
+      "vcpu": 1024,
+      "typical_use": "Maximum capacity workloads"
+    }
+  ]
+}

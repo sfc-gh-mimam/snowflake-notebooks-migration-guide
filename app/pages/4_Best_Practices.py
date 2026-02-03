@@ -1,1 +1,428 @@
-[{"text": "\"\"\"Page 4: Best Practices.\"\"\"\n\nimport streamlit as st\nimport sys\nimport os\nimport pandas as pd\n\nsys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))\n\nfrom components import (\n    inject_custom_css,\n    create_info_box,\n    create_warning_box,\n    create_pdf_download_button,\n    format_sql_for_pdf\n)\n\nst.set_page_config(\n    page_title=\"Best Practices\",\n    page_icon=\"\u2728\",\n    layout=\"wide\"\n)\n\ninject_custom_css()\n\nst.title(\"\u2728 Best Practices & Optimization\")\n\nst.markdown(\"\"\"\nLearn strategies to optimize your compute pool configuration for cost efficiency,\nperformance, and maintainability.\n\"\"\")\n\nst.markdown(\"---\")\n\n# System vs User-Managed\nst.markdown(\"## \ud83c\udfdb\ufe0f System vs User-Managed Compute Pools\")\n\ncol1, col2 = st.columns(2)\n\nwith col1:\n    st.markdown(\"\"\"\n    ### System-Managed Pools\n\n    **Snowflake manages:** Pool creation, scaling, lifecycle\n\n    **Pros:**\n    - Zero configuration\n    - Automatic optimization\n    - No management overhead\n    - Good for simple use cases\n\n    **Cons:**\n    - Less control over costs\n    - Limited customization\n    - Shared resources\n\n    **Best for:**\n    - Quick prototyping\n    - Small teams\n    - Simple notebook workloads\n    \"\"\")\n\nwith col2:\n    st.markdown(\"\"\"\n    ### User-Managed Pools\n\n    **You manage:** Pool creation, sizing, policies\n\n    **Pros:**\n    - Full cost control\n    - Custom configurations\n    - Dedicated resources\n    - GPU access\n\n    **Cons:**\n    - Requires setup\n    - Ongoing management\n    - Need monitoring\n\n    **Best for:**\n    - Production workloads\n    - Cost-sensitive environments\n    - GPU requirements\n    - Enterprise deployments\n    \"\"\")\n\ncreate_info_box(\"\"\"\n    <strong>\ud83d\udca1 Recommendation:</strong> Use system-managed pools for development and testing,\n    then migrate to user-managed pools for production workloads where you need cost control\n    and performance guarantees.\n\"\"\")\n\nst.markdown(\"---\")\n\n# Right-Sizing Guide\nst.markdown(\"## \ud83c\udfaf Right-Sizing Calculator\")\n\nst.markdown(\"\"\"\nDetermine the optimal instance family and node count for your workload:\n\"\"\")\n\ncol1, col2 = st.columns(2)\n\nwith col1:\n    st.markdown(\"### Input Your Requirements\")\n\n    memory_needs = st.selectbox(\n        \"Memory Requirements\",\n        [\"Low (<8GB)\", \"Medium (8-32GB)\", \"High (32-64GB)\", \"Very High (>64GB)\"]\n    )\n\n    compute_intensity = st.selectbox(\n        \"Compute Intensity\",\n        [\"Light (SQL, EDA)\", \"Moderate (Data Processing)\", \"Heavy (ML Training)\", \"Extreme (Deep Learning)\"]\n    )\n\n    session_duration = st.selectbox(\n        \"Typical Session Duration\",\n        [\"Short (<1 hour)\", \"Medium (1-4 hours)\", \"Long (4-8 hours)\", \"Extended (>8 hours)\"]\n    )\n\nwith col2:\n    st.markdown(\"### Recommendation\")\n\n    # Simple recommendation logic\n    if compute_intensity == \"Extreme (Deep Learning)\":\n        rec_family = \"GPU_NV_M or GPU_NV_L\"\n        rec_nodes = \"2-4 nodes\"\n        rec_suspend = \"30 minutes\"\n    elif memory_needs in [\"High (32-64GB)\", \"Very High (>64GB)\"]:\n        rec_family = \"HIGHMEM_X64_M or HIGHMEM_X64_L\"\n        rec_nodes = \"1-3 nodes\"\n        rec_suspend = \"15 minutes\"\n    elif compute_intensity == \"Heavy (ML Training)\":\n        rec_family = \"CPU_X64_L\"\n        rec_nodes = \"2-4 nodes\"\n        rec_suspend = \"20 minutes\"\n    else:\n        rec_family = \"CPU_X64_S or CPU_X64_M\"\n        rec_nodes = \"1-2 nodes\"\n        rec_suspend = \"10 minutes\"\n\n    st.markdown(f\"\"\"\n    **Instance Family:** `{rec_family}`\n\n    **Node Count:** {rec_nodes}\n\n    **Auto-Suspend:** {rec_suspend}\n\n    **Rationale:**\n    - Memory: {memory_needs}\n    - Compute: {compute_intensity}\n    - Duration: {session_duration}\n    \"\"\")\n\nst.markdown(\"---\")\n\n# Idle Timeout Recommendations\nst.markdown(\"## \u23f1\ufe0f Idle Timeout Recommendations\")\n\nst.markdown(\"\"\"\nOptimize auto-suspend settings based on workload patterns:\n\"\"\")\n\ntimeout_data = {\n    \"Workload Type\": [\n        \"Interactive SQL Queries\",\n        \"Data Exploration (EDA)\",\n        \"Batch Data Processing\",\n        \"ML Model Training\",\n        \"Deep Learning (GPU)\",\n        \"Development/Testing\"\n    ],\n    \"Recommended Timeout\": [\n        \"5-10 minutes\",\n        \"10-15 minutes\",\n        \"15-20 minutes\",\n        \"20-30 minutes\",\n        \"30-60 minutes\",\n        \"5 minutes\"\n    ],\n    \"Reasoning\": [\n        \"Short pauses between queries, quick restart acceptable\",\n        \"Medium pauses for analysis, balance cost vs UX\",\n        \"Jobs run continuously, longer timeout prevents interruption\",\n        \"Long training sessions, minimize restarts\",\n        \"Expensive GPUs, but training jobs are long-running\",\n        \"Frequent stops, optimize for cost over convenience\"\n    ],\n    \"Monthly Savings vs 60min\": [\n        \"60-70%\",\n        \"40-50%\",\n        \"25-35%\",\n        \"15-25%\",\n        \"0-10%\",\n        \"70-80%\"\n    ]\n}\n\ndf_timeouts = pd.DataFrame(timeout_data)\nst.dataframe(df_timeouts, use_container_width=True, hide_index=True)\n\ncreate_warning_box(\"\"\"\n    <strong>\u26a0\ufe0f Warning:</strong> Setting timeout too short causes frequent restarts and poor UX.\n    Setting it too long wastes credits on idle pools. Monitor actual usage patterns and adjust.\n\"\"\")\n\nst.markdown(\"---\")\n\n# Configuration Templates\nst.markdown(\"## \ud83d\udcdc Configuration Templates\")\n\nst.markdown(\"\"\"\nReady-to-use SQL templates for common scenarios:\n\"\"\")\n\ntemplate_tabs = st.tabs([\n    \"Interactive Notebooks\",\n    \"ML Training\",\n    \"Batch Processing\",\n    \"GPU Workloads\"\n])\n\nwith template_tabs[0]:\n    st.markdown(\"### Interactive Data Analysis\")\n    sql_interactive = \"\"\"\n-- Optimal for: SQL queries, data exploration, ad-hoc analysis\nCREATE COMPUTE POOL INTERACTIVE_NOTEBOOKS\n  MIN_NODES = 1\n  MAX_NODES = 3\n  INSTANCE_FAMILY = CPU_X64_S\n  AUTO_RESUME = TRUE\n  AUTO_SUSPEND_SECS = 600  -- 10 minutes\n  COMMENT = 'Interactive notebook workloads with quick auto-suspend';\n\nGRANT USAGE ON COMPUTE POOL INTERACTIVE_NOTEBOOKS TO ROLE DATA_ANALYST;\nGRANT OPERATE ON COMPUTE POOL INTERACTIVE_NOTEBOOKS TO ROLE DATA_ANALYST;\n\"\"\"\n    st.code(sql_interactive, language=\"sql\")\n    st.download_button(\n        \"Download Template\",\n        sql_interactive,\n        \"interactive_notebooks.sql\",\n        use_container_width=True\n    )\n\nwith template_tabs[1]:\n    st.markdown(\"### Machine Learning Training\")\n    sql_ml = \"\"\"\n-- Optimal for: ML model training, feature engineering, CPU-based ML\nCREATE COMPUTE POOL ML_TRAINING_POOL\n  MIN_NODES = 2\n  MAX_NODES = 5\n  INSTANCE_FAMILY = CPU_X64_L\n  AUTO_RESUME = TRUE\n  AUTO_SUSPEND_SECS = 1800  -- 30 minutes\n  COMMENT = 'ML training workloads with extended sessions';\n\nGRANT USAGE ON COMPUTE POOL ML_TRAINING_POOL TO ROLE ML_ENGINEER;\nGRANT OPERATE ON COMPUTE POOL ML_TRAINING_POOL TO ROLE ML_ENGINEER;\n\"\"\"\n    st.code(sql_ml, language=\"sql\")\n    st.download_button(\n        \"Download Template\",\n        sql_ml,\n        \"ml_training.sql\",\n        use_container_width=True\n    )\n\nwith template_tabs[2]:\n    st.markdown(\"### Batch Data Processing\")\n    sql_batch = \"\"\"\n-- Optimal for: ETL pipelines, data transformations, scheduled jobs\nCREATE COMPUTE POOL BATCH_PROCESSING\n  MIN_NODES = 1\n  MAX_NODES = 4\n  INSTANCE_FAMILY = HIGHMEM_X64_M\n  AUTO_RESUME = TRUE\n  AUTO_SUSPEND_SECS = 900  -- 15 minutes\n  COMMENT = 'Batch processing with high memory for large datasets';\n\nGRANT USAGE ON COMPUTE POOL BATCH_PROCESSING TO ROLE DATA_ENGINEER;\nGRANT OPERATE ON COMPUTE POOL BATCH_PROCESSING TO ROLE DATA_ENGINEER;\n\"\"\"\n    st.code(sql_batch, language=\"sql\")\n    st.download_button(\n        \"Download Template\",\n        sql_batch,\n        \"batch_processing.sql\",\n        use_container_width=True\n    )\n\nwith template_tabs[3]:\n    st.markdown(\"### Deep Learning with GPU\")\n    sql_gpu = \"\"\"\n-- Optimal for: Deep learning, neural networks, GPU-accelerated workloads\nCREATE COMPUTE POOL DL_GPU_POOL\n  MIN_NODES = 1\n  MAX_NODES = 2\n  INSTANCE_FAMILY = GPU_NV_M\n  AUTO_RESUME = TRUE\n  AUTO_SUSPEND_SECS = 3600  -- 60 minutes\n  COMMENT = 'GPU pool for deep learning workloads';\n\nGRANT USAGE ON COMPUTE POOL DL_GPU_POOL TO ROLE ML_ENGINEER;\nGRANT OPERATE ON COMPUTE POOL DL_GPU_POOL TO ROLE ML_ENGINEER;\n\"\"\"\n    st.code(sql_gpu, language=\"sql\")\n    st.download_button(\n        \"Download Template\",\n        sql_gpu,\n        \"gpu_workloads.sql\",\n        use_container_width=True\n    )\n\nst.markdown(\"---\")\n\n# Optimization Strategies\nst.markdown(\"## \ud83d\ude80 Cost Optimization Strategies\")\n\ncol1, col2 = st.columns(2)\n\nwith col1:\n    st.markdown(\"\"\"\n    ### 1. Right-Size Instance Families\n    - Start small (CPU_X64_S) and scale up\n    - Use high-memory only when needed\n    - Reserve GPUs for confirmed use cases\n\n    ### 2. Optimize Auto-Suspend\n    - Monitor idle time patterns\n    - Adjust timeouts per workload\n    - Balance UX vs cost\n\n    ### 3. Node Count Management\n    - Set MIN_NODES = 1 for most workloads\n    - Increase MAX_NODES for burst capacity\n    - Scale based on concurrent users\n\n    ### 4. Consolidate Where Possible\n    - Share pools across similar workloads\n    - Avoid over-segmentation\n    - Use naming conventions\n    \"\"\")\n\nwith col2:\n    st.markdown(\"\"\"\n    ### 5. Implement Monitoring\n    - Track daily credit consumption\n    - Set budget alerts\n    - Review idle pools weekly\n\n    ### 6. User Education\n    - Train users on cost awareness\n    - Encourage proper session cleanup\n    - Share optimization tips\n\n    ### 7. Leverage Tagging\n    - Tag queries by project/user\n    - Enable chargeback models\n    - Track cost attribution\n\n    ### 8. Regular Reviews\n    - Monthly cost analysis\n    - Quarterly configuration audits\n    - Continuous optimization\n    \"\"\")\n\nst.markdown(\"---\")\n\n# PDF Export\nst.markdown(\"## \ud83d\udcc4 Export Best Practices Guide\")\n\nif st.button(\"\ud83d\udcc4 Generate PDF\"):\n    pdf_content = f\"\"\"\n    <h2>Best Practices & Optimization</h2>\n\n    <h3>System vs User-Managed Pools</h3>\n    <p><strong>System-Managed:</strong> Zero config, automatic optimization, good for prototyping</p>\n    <p><strong>User-Managed:</strong> Full control, custom configs, production workloads</p>\n\n    <h3>Idle Timeout Recommendations</h3>\n    {df_timeouts.to_html(index=False, border=0)}\n\n    <h3>Configuration Templates</h3>\n\n    <h4>Interactive Notebooks</h4>\n    {format_sql_for_pdf(sql_interactive)}\n\n    <h4>ML Training</h4>\n    {format_sql_for_pdf(sql_ml)}\n\n    <h4>Batch Processing</h4>\n    {format_sql_for_pdf(sql_batch)}\n\n    <h4>GPU Workloads</h4>\n    {format_sql_for_pdf(sql_gpu)}\n\n    <h3>Cost Optimization Checklist</h3>\n    <ul>\n        <li>Right-size instance families (start small)</li>\n        <li>Optimize auto-suspend timeouts</li>\n        <li>Manage node counts efficiently</li>\n        <li>Consolidate similar workloads</li>\n        <li>Implement comprehensive monitoring</li>\n        <li>Educate users on cost awareness</li>\n        <li>Use query tagging for attribution</li>\n        <li>Conduct regular configuration reviews</li>\n    </ul>\n    \"\"\"\n\n    create_pdf_download_button(\n        pdf_content,\n        title=\"Best Practices Guide\",\n        filename=\"best_practices_guide.pdf\"\n    )\n\n# Navigation\nst.markdown(\"---\")\ncol1, col2, col3 = st.columns(3)\n\nwith col1:\n    if st.button(\"\u2b05\ufe0f Previous: Cost Monitoring\"):\n        st.switch_page(\"pages/3_Cost_Monitoring.py\")\n\nwith col3:\n    if st.button(\"Next: Getting Started \u27a1\ufe0f\"):\n        st.switch_page(\"pages/5_Getting_Started.py\")\n", "type": "text"}]
+"""Page 4: Best Practices."""
+
+import streamlit as st
+import sys
+import os
+import pandas as pd
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from components import (
+    inject_custom_css,
+    create_info_box,
+    create_warning_box,
+    create_pdf_download_button,
+    format_sql_for_pdf
+)
+
+st.set_page_config(
+    page_title="Best Practices",
+    page_icon="✨",
+    layout="wide"
+)
+
+inject_custom_css()
+
+st.title("✨ Best Practices & Optimization")
+
+st.markdown("""
+Learn strategies to optimize your compute pool configuration for cost efficiency,
+performance, and maintainability.
+""")
+
+st.markdown("---")
+
+# System vs User-Managed
+st.markdown("## 🏛️ System vs User-Managed Compute Pools")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+    ### System-Managed Pools
+
+    **Snowflake manages:** Pool creation, scaling, lifecycle
+
+    **Pros:**
+    - Zero configuration
+    - Automatic optimization
+    - No management overhead
+    - Good for simple use cases
+
+    **Cons:**
+    - Less control over costs
+    - Limited customization
+    - Shared resources
+
+    **Best for:**
+    - Quick prototyping
+    - Small teams
+    - Simple notebook workloads
+    """)
+
+with col2:
+    st.markdown("""
+    ### User-Managed Pools
+
+    **You manage:** Pool creation, sizing, policies
+
+    **Pros:**
+    - Full cost control
+    - Custom configurations
+    - Dedicated resources
+    - GPU access
+
+    **Cons:**
+    - Requires setup
+    - Ongoing management
+    - Need monitoring
+
+    **Best for:**
+    - Production workloads
+    - Cost-sensitive environments
+    - GPU requirements
+    - Enterprise deployments
+    """)
+
+create_info_box("""
+    <strong>💡 Recommendation:</strong> Use system-managed pools for development and testing,
+    then migrate to user-managed pools for production workloads where you need cost control
+    and performance guarantees.
+""")
+
+st.markdown("---")
+
+# Right-Sizing Guide
+st.markdown("## 🎯 Right-Sizing Calculator")
+
+st.markdown("""
+Determine the optimal instance family and node count for your workload:
+""")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("### Input Your Requirements")
+
+    memory_needs = st.selectbox(
+        "Memory Requirements",
+        ["Low (<8GB)", "Medium (8-32GB)", "High (32-64GB)", "Very High (>64GB)"]
+    )
+
+    compute_intensity = st.selectbox(
+        "Compute Intensity",
+        ["Light (SQL, EDA)", "Moderate (Data Processing)", "Heavy (ML Training)", "Extreme (Deep Learning)"]
+    )
+
+    session_duration = st.selectbox(
+        "Typical Session Duration",
+        ["Short (<1 hour)", "Medium (1-4 hours)", "Long (4-8 hours)", "Extended (>8 hours)"]
+    )
+
+with col2:
+    st.markdown("### Recommendation")
+
+    # Simple recommendation logic
+    if compute_intensity == "Extreme (Deep Learning)":
+        rec_family = "GPU_NV_M or GPU_NV_L"
+        rec_nodes = "2-4 nodes"
+        rec_suspend = "30 minutes"
+    elif memory_needs in ["High (32-64GB)", "Very High (>64GB)"]:
+        rec_family = "HIGHMEM_X64_M or HIGHMEM_X64_L"
+        rec_nodes = "1-3 nodes"
+        rec_suspend = "15 minutes"
+    elif compute_intensity == "Heavy (ML Training)":
+        rec_family = "CPU_X64_L"
+        rec_nodes = "2-4 nodes"
+        rec_suspend = "20 minutes"
+    else:
+        rec_family = "CPU_X64_S or CPU_X64_M"
+        rec_nodes = "1-2 nodes"
+        rec_suspend = "10 minutes"
+
+    st.markdown(f"""
+    **Instance Family:** `{rec_family}`
+
+    **Node Count:** {rec_nodes}
+
+    **Auto-Suspend:** {rec_suspend}
+
+    **Rationale:**
+    - Memory: {memory_needs}
+    - Compute: {compute_intensity}
+    - Duration: {session_duration}
+    """)
+
+st.markdown("---")
+
+# Idle Timeout Recommendations
+st.markdown("## ⏱️ Idle Timeout Recommendations")
+
+st.markdown("""
+Optimize auto-suspend settings based on workload patterns:
+""")
+
+timeout_data = {
+    "Workload Type": [
+        "Interactive SQL Queries",
+        "Data Exploration (EDA)",
+        "Batch Data Processing",
+        "ML Model Training",
+        "Deep Learning (GPU)",
+        "Development/Testing"
+    ],
+    "Recommended Timeout": [
+        "5-10 minutes",
+        "10-15 minutes",
+        "15-20 minutes",
+        "20-30 minutes",
+        "30-60 minutes",
+        "5 minutes"
+    ],
+    "Reasoning": [
+        "Short pauses between queries, quick restart acceptable",
+        "Medium pauses for analysis, balance cost vs UX",
+        "Jobs run continuously, longer timeout prevents interruption",
+        "Long training sessions, minimize restarts",
+        "Expensive GPUs, but training jobs are long-running",
+        "Frequent stops, optimize for cost over convenience"
+    ],
+    "Monthly Savings vs 60min": [
+        "60-70%",
+        "40-50%",
+        "25-35%",
+        "15-25%",
+        "0-10%",
+        "70-80%"
+    ]
+}
+
+df_timeouts = pd.DataFrame(timeout_data)
+st.dataframe(df_timeouts, use_container_width=True, hide_index=True)
+
+create_warning_box("""
+    <strong>⚠️ Warning:</strong> Setting timeout too short causes frequent restarts and poor UX.
+    Setting it too long wastes credits on idle pools. Monitor actual usage patterns and adjust.
+""")
+
+st.markdown("---")
+
+# Configuration Templates
+st.markdown("## 📜 Configuration Templates")
+
+st.markdown("""
+Ready-to-use SQL templates for common scenarios:
+""")
+
+template_tabs = st.tabs([
+    "Interactive Notebooks",
+    "ML Training",
+    "Batch Processing",
+    "GPU Workloads"
+])
+
+with template_tabs[0]:
+    st.markdown("### Interactive Data Analysis")
+    sql_interactive = """
+-- Optimal for: SQL queries, data exploration, ad-hoc analysis
+CREATE COMPUTE POOL INTERACTIVE_NOTEBOOKS
+  MIN_NODES = 1
+  MAX_NODES = 3
+  INSTANCE_FAMILY = CPU_X64_S
+  AUTO_RESUME = TRUE
+  AUTO_SUSPEND_SECS = 600  -- 10 minutes
+  COMMENT = 'Interactive notebook workloads with quick auto-suspend';
+
+GRANT USAGE ON COMPUTE POOL INTERACTIVE_NOTEBOOKS TO ROLE DATA_ANALYST;
+GRANT OPERATE ON COMPUTE POOL INTERACTIVE_NOTEBOOKS TO ROLE DATA_ANALYST;
+"""
+    st.code(sql_interactive, language="sql")
+    st.download_button(
+        "Download Template",
+        sql_interactive,
+        "interactive_notebooks.sql",
+        use_container_width=True
+    )
+
+with template_tabs[1]:
+    st.markdown("### Machine Learning Training")
+    sql_ml = """
+-- Optimal for: ML model training, feature engineering, CPU-based ML
+CREATE COMPUTE POOL ML_TRAINING_POOL
+  MIN_NODES = 2
+  MAX_NODES = 5
+  INSTANCE_FAMILY = CPU_X64_L
+  AUTO_RESUME = TRUE
+  AUTO_SUSPEND_SECS = 1800  -- 30 minutes
+  COMMENT = 'ML training workloads with extended sessions';
+
+GRANT USAGE ON COMPUTE POOL ML_TRAINING_POOL TO ROLE ML_ENGINEER;
+GRANT OPERATE ON COMPUTE POOL ML_TRAINING_POOL TO ROLE ML_ENGINEER;
+"""
+    st.code(sql_ml, language="sql")
+    st.download_button(
+        "Download Template",
+        sql_ml,
+        "ml_training.sql",
+        use_container_width=True
+    )
+
+with template_tabs[2]:
+    st.markdown("### Batch Data Processing")
+    sql_batch = """
+-- Optimal for: ETL pipelines, data transformations, scheduled jobs
+CREATE COMPUTE POOL BATCH_PROCESSING
+  MIN_NODES = 1
+  MAX_NODES = 4
+  INSTANCE_FAMILY = HIGHMEM_X64_M
+  AUTO_RESUME = TRUE
+  AUTO_SUSPEND_SECS = 900  -- 15 minutes
+  COMMENT = 'Batch processing with high memory for large datasets';
+
+GRANT USAGE ON COMPUTE POOL BATCH_PROCESSING TO ROLE DATA_ENGINEER;
+GRANT OPERATE ON COMPUTE POOL BATCH_PROCESSING TO ROLE DATA_ENGINEER;
+"""
+    st.code(sql_batch, language="sql")
+    st.download_button(
+        "Download Template",
+        sql_batch,
+        "batch_processing.sql",
+        use_container_width=True
+    )
+
+with template_tabs[3]:
+    st.markdown("### Deep Learning with GPU")
+    sql_gpu = """
+-- Optimal for: Deep learning, neural networks, GPU-accelerated workloads
+CREATE COMPUTE POOL DL_GPU_POOL
+  MIN_NODES = 1
+  MAX_NODES = 2
+  INSTANCE_FAMILY = GPU_NV_M
+  AUTO_RESUME = TRUE
+  AUTO_SUSPEND_SECS = 3600  -- 60 minutes
+  COMMENT = 'GPU pool for deep learning workloads';
+
+GRANT USAGE ON COMPUTE POOL DL_GPU_POOL TO ROLE ML_ENGINEER;
+GRANT OPERATE ON COMPUTE POOL DL_GPU_POOL TO ROLE ML_ENGINEER;
+"""
+    st.code(sql_gpu, language="sql")
+    st.download_button(
+        "Download Template",
+        sql_gpu,
+        "gpu_workloads.sql",
+        use_container_width=True
+    )
+
+st.markdown("---")
+
+# Optimization Strategies
+st.markdown("## 🚀 Cost Optimization Strategies")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+    ### 1. Right-Size Instance Families
+    - Start small (CPU_X64_S) and scale up
+    - Use high-memory only when needed
+    - Reserve GPUs for confirmed use cases
+
+    ### 2. Optimize Auto-Suspend
+    - Monitor idle time patterns
+    - Adjust timeouts per workload
+    - Balance UX vs cost
+
+    ### 3. Node Count Management
+    - Set MIN_NODES = 1 for most workloads
+    - Increase MAX_NODES for burst capacity
+    - Scale based on concurrent users
+
+    ### 4. Consolidate Where Possible
+    - Share pools across similar workloads
+    - Avoid over-segmentation
+    - Use naming conventions
+    """)
+
+with col2:
+    st.markdown("""
+    ### 5. Implement Monitoring
+    - Track daily credit consumption
+    - Set budget alerts
+    - Review idle pools weekly
+
+    ### 6. User Education
+    - Train users on cost awareness
+    - Encourage proper session cleanup
+    - Share optimization tips
+
+    ### 7. Leverage Tagging
+    - Tag queries by project/user
+    - Enable chargeback models
+    - Track cost attribution
+
+    ### 8. Regular Reviews
+    - Monthly cost analysis
+    - Quarterly configuration audits
+    - Continuous optimization
+    """)
+
+st.markdown("---")
+
+# PDF Export
+st.markdown("## 📄 Export Best Practices Guide")
+
+if st.button("📄 Generate PDF"):
+    pdf_content = f"""
+    <h2>Best Practices & Optimization</h2>
+
+    <h3>System vs User-Managed Pools</h3>
+    <p><strong>System-Managed:</strong> Zero config, automatic optimization, good for prototyping</p>
+    <p><strong>User-Managed:</strong> Full control, custom configs, production workloads</p>
+
+    <h3>Idle Timeout Recommendations</h3>
+    {df_timeouts.to_html(index=False, border=0)}
+
+    <h3>Configuration Templates</h3>
+
+    <h4>Interactive Notebooks</h4>
+    {format_sql_for_pdf(sql_interactive)}
+
+    <h4>ML Training</h4>
+    {format_sql_for_pdf(sql_ml)}
+
+    <h4>Batch Processing</h4>
+    {format_sql_for_pdf(sql_batch)}
+
+    <h4>GPU Workloads</h4>
+    {format_sql_for_pdf(sql_gpu)}
+
+    <h3>Cost Optimization Checklist</h3>
+    <ul>
+        <li>Right-size instance families (start small)</li>
+        <li>Optimize auto-suspend timeouts</li>
+        <li>Manage node counts efficiently</li>
+        <li>Consolidate similar workloads</li>
+        <li>Implement comprehensive monitoring</li>
+        <li>Educate users on cost awareness</li>
+        <li>Use query tagging for attribution</li>
+        <li>Conduct regular configuration reviews</li>
+    </ul>
+    """
+
+    create_pdf_download_button(
+        pdf_content,
+        title="Best Practices Guide",
+        filename="best_practices_guide.pdf"
+    )
+
+# Navigation
+st.markdown("---")
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    if st.button("⬅️ Previous: Cost Monitoring"):
+        st.switch_page("pages/3_Cost_Monitoring.py")
+
+with col3:
+    if st.button("Next: Getting Started ➡️"):
+        st.switch_page("pages/5_Getting_Started.py")

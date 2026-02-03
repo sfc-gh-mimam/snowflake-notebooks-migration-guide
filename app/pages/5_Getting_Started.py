@@ -1,1 +1,431 @@
-[{"text": "\"\"\"Page 5: Getting Started - Setup Guide.\"\"\"\n\nimport streamlit as st\nimport sys\nimport os\n\nsys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))\n\nfrom components import (\n    inject_custom_css,\n    create_info_box,\n    create_warning_box,\n    create_pdf_download_button,\n    format_sql_for_pdf\n)\n\nst.set_page_config(\n    page_title=\"Getting Started\",\n    page_icon=\"\ud83d\ude80\",\n    layout=\"wide\"\n)\n\ninject_custom_css()\n\nst.title(\"\ud83d\ude80 Getting Started with Compute Pool Migration\")\n\nst.markdown(\"\"\"\nStep-by-step guide to migrate your notebooks from warehouse-backed to compute pool-backed execution.\n\"\"\")\n\nst.markdown(\"---\")\n\n# Prerequisites Checklist\nst.markdown(\"## \u2705 Prerequisites Checklist\")\n\nst.markdown(\"\"\"\nBefore starting the migration, ensure you have:\n\"\"\")\n\nprereq_items = [\n    (\"Account Permissions\", \"ACCOUNTADMIN or role with COMPUTE POOL privileges\"),\n    (\"Warehouse Access\", \"Current warehouse configuration documented\"),\n    (\"Workload Analysis\", \"Understanding of notebook usage patterns\"),\n    (\"Budget Approval\", \"Cost estimates reviewed and approved\"),\n    (\"Network Configuration\", \"Firewall/networking rules if applicable\"),\n    (\"Testing Environment\", \"Non-production environment for validation\")\n]\n\nfor item, description in prereq_items:\n    checked = st.checkbox(f\"**{item}**: {description}\")\n\nst.markdown(\"---\")\n\n# Setup Wizard\nst.markdown(\"## \ud83e\uddea Step-by-Step Migration Wizard\")\n\nst.markdown(\"\"\"\nFollow these steps to complete your migration:\n\"\"\")\n\n# Step 1\nwith st.expander(\"\u2460 Create Compute Pool\", expanded=True):\n    st.markdown(\"\"\"\n    ### Create Your Compute Pool\n\n    Use the SQL below (customized from Migration Calculator) or start with a basic configuration:\n    \"\"\")\n\n    col1, col2 = st.columns(2)\n\n    with col1:\n        pool_name_setup = st.text_input(\"Pool Name\", value=\"NOTEBOOK_POOL\", key=\"setup_pool_name\")\n        instance_family = st.selectbox(\n            \"Instance Family\",\n            [\"CPU_X64_S\", \"CPU_X64_M\", \"CPU_X64_L\", \"HIGHMEM_X64_M\", \"HIGHMEM_X64_L\", \"GPU_NV_S\", \"GPU_NV_M\"],\n            key=\"setup_instance\"\n        )\n\n    with col2:\n        min_nodes = st.number_input(\"Min Nodes\", min_value=1, max_value=10, value=1, key=\"setup_min\")\n        max_nodes = st.number_input(\"Max Nodes\", min_value=1, max_value=20, value=3, key=\"setup_max\")\n\n    auto_suspend = st.slider(\"Auto-Suspend (minutes)\", 5, 60, 15, key=\"setup_suspend\")\n\n    setup_sql = f\"\"\"\n-- Step 1: Create Compute Pool\nCREATE COMPUTE POOL {pool_name_setup}\n  MIN_NODES = {min_nodes}\n  MAX_NODES = {max_nodes}\n  INSTANCE_FAMILY = {instance_family}\n  AUTO_RESUME = TRUE\n  AUTO_SUSPEND_SECS = {auto_suspend * 60}\n  COMMENT = 'Compute pool for migrated notebook workloads';\n\"\"\"\n\n    st.code(setup_sql, language=\"sql\")\n    st.download_button(\"Download SQL\", setup_sql, \"01_create_pool.sql\", use_container_width=True)\n\n    create_info_box(\"\"\"\n        <strong>\ud83d\udca1 Tip:</strong> Start with conservative settings (small instance, low max nodes)\n        and scale up based on actual usage patterns.\n    \"\"\")\n\n# Step 2\nwith st.expander(\"\u2461 Grant Permissions\"):\n    st.markdown(\"\"\"\n    ### Configure Access Control\n\n    Grant necessary permissions to roles that will use the compute pool:\n    \"\"\")\n\n    role_name = st.text_input(\"Role Name\", value=\"DATA_SCIENTIST\", key=\"role_name\")\n\n    permission_sql = f\"\"\"\n-- Step 2: Grant Permissions\n-- Grant USAGE to allow role to use the compute pool\nGRANT USAGE ON COMPUTE POOL {pool_name_setup} TO ROLE {role_name};\n\n-- Grant OPERATE for administrative operations (optional)\nGRANT OPERATE ON COMPUTE POOL {pool_name_setup} TO ROLE {role_name};\n\n-- Grant MONITOR to view pool status and metrics (optional)\nGRANT MONITOR ON COMPUTE POOL {pool_name_setup} TO ROLE {role_name};\n\"\"\"\n\n    st.code(permission_sql, language=\"sql\")\n    st.download_button(\"Download SQL\", permission_sql, \"02_grant_permissions.sql\", use_container_width=True)\n\n    st.markdown(\"\"\"\n    **Permission Levels:**\n    - `USAGE`: Required to use the pool for notebooks\n    - `OPERATE`: Allows starting/stopping the pool\n    - `MONITOR`: Enables viewing pool status and metrics\n    \"\"\")\n\n# Step 3\nwith st.expander(\"\u2462 Configure Notebook Service\"):\n    st.markdown(\"\"\"\n    ### Link Notebooks to Compute Pool\n\n    Update notebook configuration to use the new compute pool:\n    \"\"\")\n\n    config_sql = f\"\"\"\n-- Step 3: Configure Notebook Service\n-- Set default compute pool for notebook sessions\nALTER ACCOUNT SET DEFAULT_NOTEBOOK_COMPUTE_POOL = '{pool_name_setup}';\n\n-- Or configure at database/schema level:\nALTER DATABASE <YOUR_DATABASE> SET DEFAULT_NOTEBOOK_COMPUTE_POOL = '{pool_name_setup}';\nALTER SCHEMA <YOUR_SCHEMA> SET DEFAULT_NOTEBOOK_COMPUTE_POOL = '{pool_name_setup}';\n\"\"\"\n\n    st.code(config_sql, language=\"sql\")\n    st.download_button(\"Download SQL\", config_sql, \"03_configure_notebooks.sql\", use_container_width=True)\n\n    create_warning_box(\"\"\"\n        <strong>\u26a0\ufe0f Note:</strong> Setting at account level affects all notebooks.\n        Consider schema or database level for gradual rollout.\n    \"\"\")\n\n# Step 4\nwith st.expander(\"\u2463 Test Connection\"):\n    st.markdown(\"\"\"\n    ### Validate Setup\n\n    Test that notebooks can connect to the new compute pool:\n    \"\"\")\n\n    test_steps = [\n        \"Open an existing notebook in Snowflake\",\n        \"Check that it's configured to use the new compute pool\",\n        \"Run a simple query to verify connectivity\",\n        \"Monitor compute pool status in Snowsight\",\n        \"Verify credits are being consumed as expected\"\n    ]\n\n    for i, step in enumerate(test_steps, 1):\n        st.markdown(f\"{i}. {step}\")\n\n    st.markdown(\"\"\"\n    **Test Query:**\n    ```python\n    # In notebook cell:\n    from snowflake.snowpark import Session\n\n    # Verify current compute pool\n    session.sql(\"SELECT CURRENT_COMPUTE_POOL()\").show()\n\n    # Run simple test\n    session.sql(\"SELECT 'Hello from compute pool!'\").show()\n    ```\n    \"\"\")\n\n    test_sql = f\"\"\"\n-- Verify compute pool is active\nSHOW COMPUTE POOLS LIKE '{pool_name_setup}';\n\n-- Check pool status\nSELECT * FROM TABLE(\n  INFORMATION_SCHEMA.COMPUTE_POOL_STATUS('{pool_name_setup}')\n);\n\n-- View recent activity\nSELECT *\nFROM SNOWFLAKE.ACCOUNT_USAGE.METERING_HISTORY\nWHERE service_type = 'COMPUTE_POOL'\n  AND name = '{pool_name_setup}'\n  AND start_time >= DATEADD(hour, -1, CURRENT_TIMESTAMP())\nORDER BY start_time DESC;\n\"\"\"\n\n    st.code(test_sql, language=\"sql\")\n    st.download_button(\"Download SQL\", test_sql, \"04_test_connection.sql\", use_container_width=True)\n\nst.markdown(\"---\")\n\n# Migration Workflow\nst.markdown(\"## \ud83d\udd04 Migration Workflow\")\n\nst.markdown(\"\"\"\nRecommended phased approach for enterprise migrations:\n\"\"\")\n\ncol1, col2, col3 = st.columns(3)\n\nwith col1:\n    st.markdown(\"\"\"\n    ### Phase 1: Pilot\n    - Select 2-3 notebooks\n    - Migrate to compute pool\n    - Monitor for 1-2 weeks\n    - Gather user feedback\n    - Measure cost impact\n    \"\"\")\n\nwith col2:\n    st.markdown(\"\"\"\n    ### Phase 2: Expansion\n    - Migrate 25% of notebooks\n    - Establish monitoring\n    - Train users\n    - Refine configurations\n    - Document learnings\n    \"\"\")\n\nwith col3:\n    st.markdown(\"\"\"\n    ### Phase 3: Completion\n    - Migrate remaining notebooks\n    - Decommission warehouses\n    - Optimize configurations\n    - Establish ongoing review\n    - Celebrate success!\n    \"\"\")\n\nst.markdown(\"---\")\n\n# Validation Tests\nst.markdown(\"## \u2705 Post-Migration Validation\")\n\nst.markdown(\"\"\"\nRun these checks after migration to ensure everything works correctly:\n\"\"\")\n\nvalidation_tests = [\n    (\"Connectivity\", \"All notebooks connect to compute pool\", \"SELECT CURRENT_COMPUTE_POOL();\"),\n    (\"Performance\", \"Query performance meets expectations\", \"Run representative workload and compare timing\"),\n    (\"Package Persistence\", \"Custom packages persist across sessions\", \"Install package, disconnect, reconnect, verify\"),\n    (\"Credit Consumption\", \"Credits tracking in METERING_HISTORY\", \"SELECT * FROM METERING_HISTORY WHERE service_type='COMPUTE_POOL'\"),\n    (\"Auto-Suspend\", \"Pool suspends after idle period\", \"Monitor pool status after idle time\"),\n    (\"User Access\", \"All authorized users can access\", \"Have each user test notebook access\"),\n    (\"Cost Comparison\", \"Actual costs vs projections\", \"Compare first week actual vs calculator estimate\")\n]\n\nfor test_name, description, validation in validation_tests:\n    with st.expander(f\"\u2705 {test_name}\"):\n        st.markdown(f\"**Test:** {description}\")\n        st.markdown(f\"**Validation:** `{validation}`\")\n        passed = st.checkbox(f\"Passed: {test_name}\", key=f\"validation_{test_name}\")\n\nst.markdown(\"---\")\n\n# Troubleshooting\nst.markdown(\"## \ud83d\udd27 Common Issues & Solutions\")\n\ntroubleshooting_tabs = st.tabs([\n    \"Connection Errors\",\n    \"Performance Issues\",\n    \"Cost Surprises\",\n    \"Package Problems\"\n])\n\nwith troubleshooting_tabs[0]:\n    st.markdown(\"\"\"\n    ### Connection Errors\n\n    **Problem:** Notebook fails to connect to compute pool\n\n    **Solutions:**\n    1. Check permissions: `SHOW GRANTS ON COMPUTE POOL <pool_name>;`\n    2. Verify pool is running: `SHOW COMPUTE POOLS;`\n    3. Check pool status: `SELECT * FROM INFORMATION_SCHEMA.COMPUTE_POOL_STATUS('<pool_name>');`\n    4. Restart pool if needed: `ALTER COMPUTE POOL <pool_name> RESUME;`\n    5. Review account configuration\n    \"\"\")\n\nwith troubleshooting_tabs[1]:\n    st.markdown(\"\"\"\n    ### Performance Issues\n\n    **Problem:** Queries running slower than expected\n\n    **Solutions:**\n    1. Check instance family - may need larger instances\n    2. Increase MAX_NODES for better parallelism\n    3. Monitor node utilization\n    4. Review query patterns for optimization\n    5. Consider switching to high-memory instances\n    6. Check network latency if using external data\n    \"\"\")\n\nwith troubleshooting_tabs[2]:\n    st.markdown(\"\"\"\n    ### Cost Surprises\n\n    **Problem:** Costs higher than projected\n\n    **Solutions:**\n    1. Check idle pools: Run idle detection query\n    2. Review auto-suspend settings - may be too long\n    3. Identify heavy users with attribution query\n    4. Verify MIN_NODES not set too high\n    5. Look for runaway queries\n    6. Implement budget alerts\n    7. Review actual vs expected usage hours\n    \"\"\")\n\nwith troubleshooting_tabs[3]:\n    st.markdown(\"\"\"\n    ### Package Problems\n\n    **Problem:** Python packages not working correctly\n\n    **Solutions:**\n    1. Verify package installed in persistent environment\n    2. Check Python version compatibility\n    3. Review package dependencies\n    4. Use requirements.txt for consistency\n    5. Clear package cache if needed\n    6. Consider container image customization\n    \"\"\")\n\nst.markdown(\"---\")\n\n# PDF Export\nst.markdown(\"## \ud83d\udcc4 Export Setup Guide\")\n\nif st.button(\"\ud83d\udcc4 Generate Complete Setup PDF\"):\n    pdf_content = f\"\"\"\n    <h2>Getting Started with Compute Pool Migration</h2>\n\n    <h3>Prerequisites Checklist</h3>\n    <ul>\n        <li>Account permissions (ACCOUNTADMIN or COMPUTE POOL privileges)</li>\n        <li>Warehouse access documentation</li>\n        <li>Workload analysis complete</li>\n        <li>Budget approval obtained</li>\n        <li>Network configuration verified</li>\n        <li>Testing environment prepared</li>\n    </ul>\n\n    <h3>Step 1: Create Compute Pool</h3>\n    {format_sql_for_pdf(setup_sql)}\n\n    <h3>Step 2: Grant Permissions</h3>\n    {format_sql_for_pdf(permission_sql)}\n\n    <h3>Step 3: Configure Notebook Service</h3>\n    {format_sql_for_pdf(config_sql)}\n\n    <h3>Step 4: Test Connection</h3>\n    {format_sql_for_pdf(test_sql)}\n\n    <h3>Migration Phases</h3>\n    <ol>\n        <li><strong>Pilot:</strong> 2-3 notebooks, monitor 1-2 weeks</li>\n        <li><strong>Expansion:</strong> 25% of notebooks, establish monitoring</li>\n        <li><strong>Completion:</strong> Remaining notebooks, optimize configs</li>\n    </ol>\n\n    <h3>Validation Checklist</h3>\n    <ul>\n        <li>Connectivity test passed</li>\n        <li>Performance meets expectations</li>\n        <li>Package persistence verified</li>\n        <li>Credit consumption tracking</li>\n        <li>Auto-suspend functioning</li>\n        <li>User access confirmed</li>\n        <li>Cost comparison validated</li>\n    </ul>\n\n    <h3>Support Resources</h3>\n    <ul>\n        <li>Snowflake Documentation: docs.snowflake.com</li>\n        <li>Account Team: Contact your Snowflake representative</li>\n        <li>Community: community.snowflake.com</li>\n    </ul>\n    \"\"\"\n\n    create_pdf_download_button(\n        pdf_content,\n        title=\"Complete Setup Guide\",\n        filename=\"setup_guide.pdf\"\n    )\n\n# Navigation\nst.markdown(\"---\")\ncol1, col2, col3 = st.columns(3)\n\nwith col1:\n    if st.button(\"\u2b05\ufe0f Previous: Best Practices\"):\n        st.switch_page(\"pages/4_Best_Practices.py\")\n\nwith col2:\n    if st.button(\"\ud83c\udfe0 Back to Home\"):\n        st.switch_page(\"main.py\")\n\nwith col3:\n    if st.button(\"\ud83e\uddee Go to Calculator\"):\n        st.switch_page(\"pages/2_Migration_Calculator.py\")\n", "type": "text"}]
+"""Page 5: Getting Started - Setup Guide."""
+
+import streamlit as st
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from components import (
+    inject_custom_css,
+    create_info_box,
+    create_warning_box,
+    create_pdf_download_button,
+    format_sql_for_pdf
+)
+
+st.set_page_config(
+    page_title="Getting Started",
+    page_icon="🚀",
+    layout="wide"
+)
+
+inject_custom_css()
+
+st.title("🚀 Getting Started with Compute Pool Migration")
+
+st.markdown("""
+Step-by-step guide to migrate your notebooks from warehouse-backed to compute pool-backed execution.
+""")
+
+st.markdown("---")
+
+# Prerequisites Checklist
+st.markdown("## ✅ Prerequisites Checklist")
+
+st.markdown("""
+Before starting the migration, ensure you have:
+""")
+
+prereq_items = [
+    ("Account Permissions", "ACCOUNTADMIN or role with COMPUTE POOL privileges"),
+    ("Warehouse Access", "Current warehouse configuration documented"),
+    ("Workload Analysis", "Understanding of notebook usage patterns"),
+    ("Budget Approval", "Cost estimates reviewed and approved"),
+    ("Network Configuration", "Firewall/networking rules if applicable"),
+    ("Testing Environment", "Non-production environment for validation")
+]
+
+for item, description in prereq_items:
+    checked = st.checkbox(f"**{item}**: {description}")
+
+st.markdown("---")
+
+# Setup Wizard
+st.markdown("## 🧪 Step-by-Step Migration Wizard")
+
+st.markdown("""
+Follow these steps to complete your migration:
+""")
+
+# Step 1
+with st.expander("① Create Compute Pool", expanded=True):
+    st.markdown("""
+    ### Create Your Compute Pool
+
+    Use the SQL below (customized from Migration Calculator) or start with a basic configuration:
+    """)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        pool_name_setup = st.text_input("Pool Name", value="NOTEBOOK_POOL", key="setup_pool_name")
+        instance_family = st.selectbox(
+            "Instance Family",
+            ["CPU_X64_S", "CPU_X64_M", "CPU_X64_L", "HIGHMEM_X64_M", "HIGHMEM_X64_L", "GPU_NV_S", "GPU_NV_M"],
+            key="setup_instance"
+        )
+
+    with col2:
+        min_nodes = st.number_input("Min Nodes", min_value=1, max_value=10, value=1, key="setup_min")
+        max_nodes = st.number_input("Max Nodes", min_value=1, max_value=20, value=3, key="setup_max")
+
+    auto_suspend = st.slider("Auto-Suspend (minutes)", 5, 60, 15, key="setup_suspend")
+
+    setup_sql = f"""
+-- Step 1: Create Compute Pool
+CREATE COMPUTE POOL {pool_name_setup}
+  MIN_NODES = {min_nodes}
+  MAX_NODES = {max_nodes}
+  INSTANCE_FAMILY = {instance_family}
+  AUTO_RESUME = TRUE
+  AUTO_SUSPEND_SECS = {auto_suspend * 60}
+  COMMENT = 'Compute pool for migrated notebook workloads';
+"""
+
+    st.code(setup_sql, language="sql")
+    st.download_button("Download SQL", setup_sql, "01_create_pool.sql", use_container_width=True)
+
+    create_info_box("""
+        <strong>💡 Tip:</strong> Start with conservative settings (small instance, low max nodes)
+        and scale up based on actual usage patterns.
+    """)
+
+# Step 2
+with st.expander("② Grant Permissions"):
+    st.markdown("""
+    ### Configure Access Control
+
+    Grant necessary permissions to roles that will use the compute pool:
+    """)
+
+    role_name = st.text_input("Role Name", value="DATA_SCIENTIST", key="role_name")
+
+    permission_sql = f"""
+-- Step 2: Grant Permissions
+-- Grant USAGE to allow role to use the compute pool
+GRANT USAGE ON COMPUTE POOL {pool_name_setup} TO ROLE {role_name};
+
+-- Grant OPERATE for administrative operations (optional)
+GRANT OPERATE ON COMPUTE POOL {pool_name_setup} TO ROLE {role_name};
+
+-- Grant MONITOR to view pool status and metrics (optional)
+GRANT MONITOR ON COMPUTE POOL {pool_name_setup} TO ROLE {role_name};
+"""
+
+    st.code(permission_sql, language="sql")
+    st.download_button("Download SQL", permission_sql, "02_grant_permissions.sql", use_container_width=True)
+
+    st.markdown("""
+    **Permission Levels:**
+    - `USAGE`: Required to use the pool for notebooks
+    - `OPERATE`: Allows starting/stopping the pool
+    - `MONITOR`: Enables viewing pool status and metrics
+    """)
+
+# Step 3
+with st.expander("③ Configure Notebook Service"):
+    st.markdown("""
+    ### Link Notebooks to Compute Pool
+
+    Update notebook configuration to use the new compute pool:
+    """)
+
+    config_sql = f"""
+-- Step 3: Configure Notebook Service
+-- Set default compute pool for notebook sessions
+ALTER ACCOUNT SET DEFAULT_NOTEBOOK_COMPUTE_POOL = '{pool_name_setup}';
+
+-- Or configure at database/schema level:
+ALTER DATABASE <YOUR_DATABASE> SET DEFAULT_NOTEBOOK_COMPUTE_POOL = '{pool_name_setup}';
+ALTER SCHEMA <YOUR_SCHEMA> SET DEFAULT_NOTEBOOK_COMPUTE_POOL = '{pool_name_setup}';
+"""
+
+    st.code(config_sql, language="sql")
+    st.download_button("Download SQL", config_sql, "03_configure_notebooks.sql", use_container_width=True)
+
+    create_warning_box("""
+        <strong>⚠️ Note:</strong> Setting at account level affects all notebooks.
+        Consider schema or database level for gradual rollout.
+    """)
+
+# Step 4
+with st.expander("④ Test Connection"):
+    st.markdown("""
+    ### Validate Setup
+
+    Test that notebooks can connect to the new compute pool:
+    """)
+
+    test_steps = [
+        "Open an existing notebook in Snowflake",
+        "Check that it's configured to use the new compute pool",
+        "Run a simple query to verify connectivity",
+        "Monitor compute pool status in Snowsight",
+        "Verify credits are being consumed as expected"
+    ]
+
+    for i, step in enumerate(test_steps, 1):
+        st.markdown(f"{i}. {step}")
+
+    st.markdown("""
+    **Test Query:**
+    ```python
+    # In notebook cell:
+    from snowflake.snowpark import Session
+
+    # Verify current compute pool
+    session.sql("SELECT CURRENT_COMPUTE_POOL()").show()
+
+    # Run simple test
+    session.sql("SELECT 'Hello from compute pool!'").show()
+    ```
+    """)
+
+    test_sql = f"""
+-- Verify compute pool is active
+SHOW COMPUTE POOLS LIKE '{pool_name_setup}';
+
+-- Check pool status
+SELECT * FROM TABLE(
+  INFORMATION_SCHEMA.COMPUTE_POOL_STATUS('{pool_name_setup}')
+);
+
+-- View recent activity
+SELECT *
+FROM SNOWFLAKE.ACCOUNT_USAGE.METERING_HISTORY
+WHERE service_type = 'COMPUTE_POOL'
+  AND name = '{pool_name_setup}'
+  AND start_time >= DATEADD(hour, -1, CURRENT_TIMESTAMP())
+ORDER BY start_time DESC;
+"""
+
+    st.code(test_sql, language="sql")
+    st.download_button("Download SQL", test_sql, "04_test_connection.sql", use_container_width=True)
+
+st.markdown("---")
+
+# Migration Workflow
+st.markdown("## 🔄 Migration Workflow")
+
+st.markdown("""
+Recommended phased approach for enterprise migrations:
+""")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("""
+    ### Phase 1: Pilot
+    - Select 2-3 notebooks
+    - Migrate to compute pool
+    - Monitor for 1-2 weeks
+    - Gather user feedback
+    - Measure cost impact
+    """)
+
+with col2:
+    st.markdown("""
+    ### Phase 2: Expansion
+    - Migrate 25% of notebooks
+    - Establish monitoring
+    - Train users
+    - Refine configurations
+    - Document learnings
+    """)
+
+with col3:
+    st.markdown("""
+    ### Phase 3: Completion
+    - Migrate remaining notebooks
+    - Decommission warehouses
+    - Optimize configurations
+    - Establish ongoing review
+    - Celebrate success!
+    """)
+
+st.markdown("---")
+
+# Validation Tests
+st.markdown("## ✅ Post-Migration Validation")
+
+st.markdown("""
+Run these checks after migration to ensure everything works correctly:
+""")
+
+validation_tests = [
+    ("Connectivity", "All notebooks connect to compute pool", "SELECT CURRENT_COMPUTE_POOL();"),
+    ("Performance", "Query performance meets expectations", "Run representative workload and compare timing"),
+    ("Package Persistence", "Custom packages persist across sessions", "Install package, disconnect, reconnect, verify"),
+    ("Credit Consumption", "Credits tracking in METERING_HISTORY", "SELECT * FROM METERING_HISTORY WHERE service_type='COMPUTE_POOL'"),
+    ("Auto-Suspend", "Pool suspends after idle period", "Monitor pool status after idle time"),
+    ("User Access", "All authorized users can access", "Have each user test notebook access"),
+    ("Cost Comparison", "Actual costs vs projections", "Compare first week actual vs calculator estimate")
+]
+
+for test_name, description, validation in validation_tests:
+    with st.expander(f"✅ {test_name}"):
+        st.markdown(f"**Test:** {description}")
+        st.markdown(f"**Validation:** `{validation}`")
+        passed = st.checkbox(f"Passed: {test_name}", key=f"validation_{test_name}")
+
+st.markdown("---")
+
+# Troubleshooting
+st.markdown("## 🔧 Common Issues & Solutions")
+
+troubleshooting_tabs = st.tabs([
+    "Connection Errors",
+    "Performance Issues",
+    "Cost Surprises",
+    "Package Problems"
+])
+
+with troubleshooting_tabs[0]:
+    st.markdown("""
+    ### Connection Errors
+
+    **Problem:** Notebook fails to connect to compute pool
+
+    **Solutions:**
+    1. Check permissions: `SHOW GRANTS ON COMPUTE POOL <pool_name>;`
+    2. Verify pool is running: `SHOW COMPUTE POOLS;`
+    3. Check pool status: `SELECT * FROM INFORMATION_SCHEMA.COMPUTE_POOL_STATUS('<pool_name>');`
+    4. Restart pool if needed: `ALTER COMPUTE POOL <pool_name> RESUME;`
+    5. Review account configuration
+    """)
+
+with troubleshooting_tabs[1]:
+    st.markdown("""
+    ### Performance Issues
+
+    **Problem:** Queries running slower than expected
+
+    **Solutions:**
+    1. Check instance family - may need larger instances
+    2. Increase MAX_NODES for better parallelism
+    3. Monitor node utilization
+    4. Review query patterns for optimization
+    5. Consider switching to high-memory instances
+    6. Check network latency if using external data
+    """)
+
+with troubleshooting_tabs[2]:
+    st.markdown("""
+    ### Cost Surprises
+
+    **Problem:** Costs higher than projected
+
+    **Solutions:**
+    1. Check idle pools: Run idle detection query
+    2. Review auto-suspend settings - may be too long
+    3. Identify heavy users with attribution query
+    4. Verify MIN_NODES not set too high
+    5. Look for runaway queries
+    6. Implement budget alerts
+    7. Review actual vs expected usage hours
+    """)
+
+with troubleshooting_tabs[3]:
+    st.markdown("""
+    ### Package Problems
+
+    **Problem:** Python packages not working correctly
+
+    **Solutions:**
+    1. Verify package installed in persistent environment
+    2. Check Python version compatibility
+    3. Review package dependencies
+    4. Use requirements.txt for consistency
+    5. Clear package cache if needed
+    6. Consider container image customization
+    """)
+
+st.markdown("---")
+
+# PDF Export
+st.markdown("## 📄 Export Setup Guide")
+
+if st.button("📄 Generate Complete Setup PDF"):
+    pdf_content = f"""
+    <h2>Getting Started with Compute Pool Migration</h2>
+
+    <h3>Prerequisites Checklist</h3>
+    <ul>
+        <li>Account permissions (ACCOUNTADMIN or COMPUTE POOL privileges)</li>
+        <li>Warehouse access documentation</li>
+        <li>Workload analysis complete</li>
+        <li>Budget approval obtained</li>
+        <li>Network configuration verified</li>
+        <li>Testing environment prepared</li>
+    </ul>
+
+    <h3>Step 1: Create Compute Pool</h3>
+    {format_sql_for_pdf(setup_sql)}
+
+    <h3>Step 2: Grant Permissions</h3>
+    {format_sql_for_pdf(permission_sql)}
+
+    <h3>Step 3: Configure Notebook Service</h3>
+    {format_sql_for_pdf(config_sql)}
+
+    <h3>Step 4: Test Connection</h3>
+    {format_sql_for_pdf(test_sql)}
+
+    <h3>Migration Phases</h3>
+    <ol>
+        <li><strong>Pilot:</strong> 2-3 notebooks, monitor 1-2 weeks</li>
+        <li><strong>Expansion:</strong> 25% of notebooks, establish monitoring</li>
+        <li><strong>Completion:</strong> Remaining notebooks, optimize configs</li>
+    </ol>
+
+    <h3>Validation Checklist</h3>
+    <ul>
+        <li>Connectivity test passed</li>
+        <li>Performance meets expectations</li>
+        <li>Package persistence verified</li>
+        <li>Credit consumption tracking</li>
+        <li>Auto-suspend functioning</li>
+        <li>User access confirmed</li>
+        <li>Cost comparison validated</li>
+    </ul>
+
+    <h3>Support Resources</h3>
+    <ul>
+        <li>Snowflake Documentation: docs.snowflake.com</li>
+        <li>Account Team: Contact your Snowflake representative</li>
+        <li>Community: community.snowflake.com</li>
+    </ul>
+    """
+
+    create_pdf_download_button(
+        pdf_content,
+        title="Complete Setup Guide",
+        filename="setup_guide.pdf"
+    )
+
+# Navigation
+st.markdown("---")
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    if st.button("⬅️ Previous: Best Practices"):
+        st.switch_page("pages/4_Best_Practices.py")
+
+with col2:
+    if st.button("🏠 Back to Home"):
+        st.switch_page("main.py")
+
+with col3:
+    if st.button("🧮 Go to Calculator"):
+        st.switch_page("pages/2_Migration_Calculator.py")
