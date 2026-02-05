@@ -5,7 +5,7 @@
       "type": "CPU",
       "memory_gb": 2,
       "vcpu": 1,
-      "credits_per_hour": 0.5,
+      "credits_per_hour": 0.06,
       "description": "Extra small CPU instances for lightweight notebooks"
     },
     {
@@ -13,7 +13,7 @@
       "type": "CPU",
       "memory_gb": 4,
       "vcpu": 2,
-      "credits_per_hour": 0.9,
+      "credits_per_hour": 0.11,
       "description": "Small CPU instances for standard workloads"
     },
     {
@@ -21,7 +21,7 @@
       "type": "CPU",
       "memory_gb": 8,
       "vcpu": 4,
-      "credits_per_hour": 1.7,
+      "credits_per_hour": 0.22,
       "description": "Medium CPU instances for moderate workloads"
     },
     {
@@ -29,7 +29,7 @@
       "type": "CPU",
       "memory_gb": 16,
       "vcpu": 8,
-      "credits_per_hour": 3.4,
+      "credits_per_hour": 0.44,
       "description": "Large CPU instances for intensive workloads"
     },
     {
@@ -37,7 +37,7 @@
       "type": "CPU",
       "memory_gb": 16,
       "vcpu": 2,
-      "credits_per_hour": 1.5,
+      "credits_per_hour": 0.19,
       "description": "Small high-memory instances for memory-intensive tasks"
     },
     {
@@ -45,7 +45,7 @@
       "type": "CPU",
       "memory_gb": 32,
       "vcpu": 4,
-      "credits_per_hour": 2.9,
+      "credits_per_hour": 0.38,
       "description": "Medium high-memory instances for large datasets"
     },
     {
@@ -53,7 +53,7 @@
       "type": "CPU",
       "memory_gb": 64,
       "vcpu": 8,
-      "credits_per_hour": 5.7,
+      "credits_per_hour": 0.75,
       "description": "Large high-memory instances for big data processing"
     },
     {
@@ -63,7 +63,7 @@
       "vcpu": 4,
       "gpu_memory_gb": 16,
       "gpu_count": 1,
-      "credits_per_hour": 4.5,
+      "credits_per_hour": 1.5,
       "description": "Small GPU instances for ML training and inference"
     },
     {
@@ -73,7 +73,7 @@
       "vcpu": 8,
       "gpu_memory_gb": 32,
       "gpu_count": 1,
-      "credits_per_hour": 8.5,
+      "credits_per_hour": 3.0,
       "description": "Medium GPU instances for deep learning workloads"
     },
     {
@@ -83,8 +83,9 @@
       "vcpu": 16,
       "gpu_memory_gb": 40,
       "gpu_count": 2,
-      "credits_per_hour": 16.0,
+      "credits_per_hour": 6.0,
       "description": "Large GPU instances for advanced ML and AI"
     }
-  ]
+  ],
+  "_note": "Credit rates are approximate. Verify current rates with your Snowflake account team or the Snowflake Service Consumption Table."
 }

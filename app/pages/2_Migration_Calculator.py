@@ -43,6 +43,15 @@ This calculator provides cost comparisons, resource specifications, and ready-to
 
 create_disclaimer()
 
+create_info_box("""
+    <strong>💰 Why Compute Pools Are Cheaper:</strong><br><br>
+    <strong>Compute pool credits cost significantly less</strong> than warehouse credits for equivalent compute capacity.
+    A typical notebook workload can see <strong>2-5x cost savings</strong> by migrating to compute pools.<br><br>
+    <strong>Example:</strong> Small warehouse (2 credits/hr) vs CPU_X64_S pool (0.11 credits/hr) = ~18x cheaper per hour!<br><br>
+    <em>Note: If you share a warehouse with other workloads, your marginal notebook cost may be lower,
+    but dedicated notebook compute pools still offer better economics and resource isolation.</em>
+""")
+
 st.markdown("---")
 
 # Input Section
@@ -79,12 +88,12 @@ with col2:
     )
 
     hours_per_day = st.slider(
-        "Average Hours Per Day",
+        "Notebook Session Hours Per Day",
         min_value=1.0,
         max_value=24.0,
         value=8.0,
         step=0.5,
-        help="Average notebook usage hours per day"
+        help="How long notebooks are open/active per day"
     )
 
     credit_rate = st.number_input(
@@ -164,8 +173,8 @@ if st.session_state.get('calculation_done', False):
         savings_pct = comparison['savings_percent']
         st.metric(
             "Monthly Savings",
-            f"${savings:,.2f}",
-            delta=f"{savings_pct:.1f}%",
+            f"${abs(savings):,.2f}",
+            delta=f"{abs(savings_pct):.1f}% {'saved' if savings > 0 else 'more'}",
             delta_color="normal" if savings > 0 else "inverse"
         )
 
@@ -198,7 +207,7 @@ if st.session_state.get('calculation_done', False):
             ]
         }
 
-        if gpu_required:
+        if inputs['gpu_required']:
             specs_data["Specification"].extend(["GPU Memory (GB)", "GPU Count"])
             specs_data["Warehouse"].extend(["N/A", "N/A"])
             specs_data["Compute Pool (per node)"].extend([
@@ -209,12 +218,21 @@ if st.session_state.get('calculation_done', False):
         df_specs = pd.DataFrame(specs_data)
         st.dataframe(df_specs, use_container_width=True, hide_index=True)
 
-        create_info_box(f"""
-            <strong>💡 Recommendation:</strong> {recommendation['description']}
-            <br><br>
-            <strong>Workload Multiplier:</strong> {recommendation['workload_multiplier']}x
-            applied for {inputs['workload_type']} workload type.
-        """)
+        # Show savings message
+        if savings > 0:
+            create_info_box(f"""
+                <strong>✅ Compute Pool is {abs(savings_pct):.0f}% cheaper!</strong><br><br>
+                Migrating to <strong>{recommendation['instance_family']}</strong> saves
+                <strong>${abs(savings):,.2f}/month</strong> compared to the {warehouse_size} warehouse.<br><br>
+                <strong>Recommendation:</strong> {recommendation['description']}
+            """)
+        else:
+            create_info_box(f"""
+                <strong>💡 Recommendation:</strong> {recommendation['description']}
+                <br><br>
+                <strong>Workload Multiplier:</strong> {recommendation['workload_multiplier']}x
+                applied for {inputs['workload_type']} workload type.
+            """)
 
     with col2:
         st.markdown("### Cost Comparison")

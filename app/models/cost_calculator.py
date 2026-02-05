@@ -92,6 +92,14 @@ def compare_costs(
     """
     Compare warehouse vs compute pool costs.
 
+    Args:
+        warehouse: Warehouse specification
+        recommendation: Compute pool recommendation
+        hours_per_day: Session hours per day
+        days_per_month: Working days per month
+        credit_rate: Cost per credit
+        avg_node_count: Average nodes for compute pool
+
     Returns:
         Dictionary with cost comparison details
     """
